@@ -3,9 +3,9 @@ package cn.ucai.fulicenter.bean;
 import java.io.Serializable;
 
 /**
- * Created by sks on 2016/4/15.
+ * Created by ucai on 2016/4/15.
  */
-public class BoutiqueBean implements Serializable {
+public class BoutiqueBean  implements Serializable {
 
     /**
      * id : 262
@@ -65,10 +65,10 @@ public class BoutiqueBean implements Serializable {
     public String toString() {
         return "BoutiqueBean{" +
                 "id=" + id +
-                ", title='" + title +
-                ", description='" + description +
-                ", name='" + name +
-                ", imageurl='" + imageurl +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", name='" + name + '\'' +
+                ", imageurl='" + imageurl + '\'' +
                 '}';
     }
 }

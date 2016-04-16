@@ -3,6 +3,7 @@ package cn.ucai.fulicenter.activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -12,8 +13,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -22,14 +25,17 @@ import android.widget.Toast;
 
 import com.android.volley.toolbox.NetworkImageView;
 import com.easemob.EMValueCallBack;
+import com.easemob.chat.EMContactManager;
 import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 
 import cn.ucai.fulicenter.DemoHXSDKHelper;
+import cn.ucai.fulicenter.FuLiCenterApplication;
 import cn.ucai.fulicenter.R;
-import cn.ucai.fulicenter.SuperWeChatApplication;
 import cn.ucai.fulicenter.applib.controller.HXSDKHelper;
+import cn.ucai.fulicenter.bean.UserBean;
 import cn.ucai.fulicenter.domain.User;
 import cn.ucai.fulicenter.utils.UserUtils;
 
@@ -44,6 +50,11 @@ public class UserProfileActivity extends BaseActivity implements OnClickListener
 	private TextView tvUsername;
 	private ProgressDialog dialog;
 	private RelativeLayout rlNickName;
+	private Button btnAddorChat;
+
+
+	String username;
+	Context mContext;
 	
 	
 	
@@ -51,6 +62,7 @@ public class UserProfileActivity extends BaseActivity implements OnClickListener
 	protected void onCreate(Bundle arg0) {
 		super.onCreate(arg0);
 		setContentView(R.layout.activity_user_profile);
+		mContext=this;
 		initView();
 		initListener();
 	}
@@ -62,12 +74,13 @@ public class UserProfileActivity extends BaseActivity implements OnClickListener
 		tvNickName = (TextView) findViewById(R.id.user_nickname);
 		rlNickName = (RelativeLayout) findViewById(R.id.rl_nickname);
 		iconRightArrow = (ImageView) findViewById(R.id.ic_right_arrow);
+		btnAddorChat = (Button) findViewById(R.id.btnAddorChat);
 	}
 	
 	private void initListener() {
 		Intent intent = getIntent();
-		String username = intent.getStringExtra("username");
-		String currentUserName=SuperWeChatApplication.getInstance().getUserName();
+		username = intent.getStringExtra("username");
+		String currentUserName= FuLiCenterApplication.getInstance().getUserName();
 		boolean enableUpdate = intent.getBooleanExtra("setting", false);
 		if (enableUpdate) {
 			headPhotoUpdate.setVisibility(View.VISIBLE);
@@ -77,9 +90,12 @@ public class UserProfileActivity extends BaseActivity implements OnClickListener
 		} else {
 			headPhotoUpdate.setVisibility(View.GONE);
 			iconRightArrow.setVisibility(View.INVISIBLE);
+
+
+
 		}
 		if (username == null||username.equals(currentUserName)) {
-			tvUsername.setText(SuperWeChatApplication.getInstance().getUserName());
+			tvUsername.setText(FuLiCenterApplication.getInstance().getUserName());
 //			UserUtils.setCurrentUserNick(tvNickName);
 //			UserUtils.setCurrentUserAvatar(this, headAvatar);
 			UserUtils.setCurrentUserBeanNick(tvNickName);
@@ -89,6 +105,16 @@ public class UserProfileActivity extends BaseActivity implements OnClickListener
 			UserUtils.setUserBeanNick(username, tvNickName);
 			UserUtils.setUserBeanAvatar(username, headAvatar);
 //			asyncFetchUserInfo(username);
+			ArrayList<UserBean> contactList = FuLiCenterApplication.getInstance().getContactList();
+			btnAddorChat.setVisibility(View.VISIBLE);
+			for(int i=0;i<contactList.size();i++) {
+				if (contactList.get(i).getUserName().equals(username)) {
+					btnAddorChat.setText("发消息");
+				} else if (!contactList.get(i).getUserName().equals(username) && i == contactList.size() - 1) {
+					btnAddorChat.setText("添加好友");
+				}
+			}
+			btnAddorChat.setOnClickListener(this);
 		}
 	}
 
@@ -100,7 +126,7 @@ public class UserProfileActivity extends BaseActivity implements OnClickListener
 			break;
 		case R.id.rl_nickname:
 			final EditText editText = new EditText(this);
-			new AlertDialog.Builder(this).setTitle(R.string.setting_nickname).setIcon(android.R.drawable.ic_dialog_info).setView(editText)
+			new Builder(this).setTitle(R.string.setting_nickname).setIcon(android.R.drawable.ic_dialog_info).setView(editText)
 					.setPositiveButton(R.string.dl_ok, new DialogInterface.OnClickListener() {
 
 						@Override
@@ -114,12 +140,64 @@ public class UserProfileActivity extends BaseActivity implements OnClickListener
 						}
 					}).setNegativeButton(R.string.dl_cancel, null).show();
 			break;
+			case R.id.btnAddorChat:
+				if (btnAddorChat.getText().equals("添加好友")) {
+					addContact();
+				}
+				break;
 		default:
 			break;
 		}
 
 	}
-	
+	ProgressDialog progressDialog;
+	String addFriendContext;
+	private void addContact() {
+		progressDialog = new ProgressDialog(mContext);
+		String stri = getResources().getString(R.string.Is_sending_a_request);
+		progressDialog.setMessage(stri);
+		progressDialog.setCanceledOnTouchOutside(false);
+		progressDialog.show();
+
+		View layout = View.inflate(mContext, R.layout.edit_add_friend, null);
+		final EditText requestAdd = (EditText) layout.findViewById(R.id.et_Add_friend);
+		Builder builder = new Builder(mContext);
+		Log.i("main","AlertDialog");
+		builder.setTitle("打个招呼吧")
+				.setView(layout)
+				.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						addFriendContext = requestAdd.getText().toString();
+						new Thread(new Runnable() {
+							public void run() {
+								try {
+									EMContactManager.getInstance().addContact(username, addFriendContext);
+									runOnUiThread(new Runnable() {
+										public void run() {
+											progressDialog.dismiss();
+											String s1 = getResources().getString(R.string.send_successful);
+											Toast.makeText(getApplicationContext(), s1, Toast.LENGTH_LONG).show();
+										}
+									});
+								} catch (final Exception e) {
+									runOnUiThread(new Runnable() {
+										public void run() {
+											progressDialog.dismiss();
+											Log.i("main","Request_add_buddy_failure");
+											String s2 = getResources().getString(R.string.Request_add_buddy_failure);
+											Toast.makeText(getApplicationContext(), s2 + e.getMessage(), Toast.LENGTH_LONG).show();
+										}
+									});
+								}
+							}
+						}).start();
+					}
+				})
+				.setNegativeButton("取消", null);
+		builder.create().show();
+	}
+
 	public void asyncFetchUserInfo(String username){
 		((DemoHXSDKHelper) HXSDKHelper.getInstance()).getUserProfileManager().asyncGetUserInfo(username, new EMValueCallBack<User>() {
 			
@@ -145,7 +223,7 @@ public class UserProfileActivity extends BaseActivity implements OnClickListener
 	
 	
 	private void uploadHeadPhoto() {
-		AlertDialog.Builder builder = new Builder(this);
+		Builder builder = new Builder(this);
 		builder.setTitle(R.string.dl_title_upload_photo);
 		builder.setItems(new String[] { getString(R.string.dl_msg_take_photo), getString(R.string.dl_msg_local_upload) },
 				new DialogInterface.OnClickListener() {

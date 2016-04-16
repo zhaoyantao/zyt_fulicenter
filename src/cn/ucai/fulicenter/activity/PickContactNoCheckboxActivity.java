@@ -28,8 +28,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import cn.ucai.fulicenter.Constant;
+import cn.ucai.fulicenter.FuLiCenterApplication;
 import cn.ucai.fulicenter.R;
-import cn.ucai.fulicenter.SuperWeChatApplication;
 import cn.ucai.fulicenter.adapter.ContactAdapter;
 import cn.ucai.fulicenter.bean.UserBean;
 import cn.ucai.fulicenter.widget.Sidebar;
@@ -81,7 +81,7 @@ public class PickContactNoCheckboxActivity extends BaseActivity {
 	private void getContactList() {
 		contactList.clear();
 //		Map<String, User> users = ((DemoHXSDKHelper)HXSDKHelper.getInstance()).getContactList();
-		Map<String, UserBean> users = SuperWeChatApplication.getInstance().getUserList();
+		Map<String, UserBean> users = FuLiCenterApplication.getInstance().getUserList();
 		Iterator<Entry<String, UserBean>> iterator = users.entrySet().iterator();
 		while (iterator.hasNext()) {
 			Entry<String, UserBean> entry = iterator.next();

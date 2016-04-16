@@ -3,20 +3,17 @@ package cn.ucai.fulicenter.bean;
 import java.io.Serializable;
 
 /**
- * Created by sks on 2016/4/15.
+ * Created by ucai on 2016/4/15.
  */
-public class CartBean implements Serializable {
-
+public class CartBean  implements Serializable {
 
     /**
-     * {
-     "id": 7672,//主键
-     "userName": 7672,// 用户账号
-     "goodsId": 7672,// 商品id
-     " count": 2,// 某件商品的件数
-     " checked": true,//商品英文名称
-     "goods": GoodDetailsBean //购物车中goodsId代表的商品详情信息
-     }
+     * id : 7672
+     * userName : 7672
+     * goodsId : 7672
+     *  count : 2
+     *  checked : true
+     * goods : GoodDetailsBean
      */
 
     private int id;
@@ -26,28 +23,15 @@ public class CartBean implements Serializable {
     private boolean checked;
     private GoodDetailsBean goods;
 
-    public int getId() {
-        return id;
+    public CartBean() {
     }
 
-    public void setId(int id) {
+    public CartBean(int id, int userName, int goodsId, int count, boolean checked) {
         this.id = id;
-    }
-
-    public int getUserName() {
-        return userName;
-    }
-
-    public void setUserName(int userName) {
         this.userName = userName;
-    }
-
-    public int getGoodsId() {
-        return goodsId;
-    }
-
-    public void setGoodsId(int goodsId) {
         this.goodsId = goodsId;
+        this.count = count;
+        this.checked = checked;
     }
 
     public int getCount() {
@@ -74,6 +58,30 @@ public class CartBean implements Serializable {
         this.goods = goods;
     }
 
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getUserName() {
+        return userName;
+    }
+
+    public void setUserName(int userName) {
+        this.userName = userName;
+    }
+
+    public int getGoodsId() {
+        return goodsId;
+    }
+
+    public void setGoodsId(int goodsId) {
+        this.goodsId = goodsId;
+    }
+
     @Override
     public String toString() {
         return "CartBean{" +
@@ -84,17 +92,5 @@ public class CartBean implements Serializable {
                 ", checked=" + checked +
                 ", goods=" + goods +
                 '}';
-    }
-
-    public CartBean(int id, int userName, int goodsId, int count, boolean checked) {
-        this.id = id;
-        this.userName = userName;
-        this.goodsId = goodsId;
-        this.count = count;
-        this.checked = checked;
-    }
-
-    public CartBean() {
-
     }
 }

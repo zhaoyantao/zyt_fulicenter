@@ -2,19 +2,18 @@ package cn.ucai.fulicenter.bean;
 
 import java.io.Serializable;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
-import org.codehaus.jackson.annotate.JsonProperty;
-
 public class ContactBean implements Serializable  {
 	
 	private String 		result;
 	private int 		myuid;
 	private int 		cuid;
+
 	
 	public ContactBean(){
 	}
 	
-	public ContactBean(String result, int myuid, int cuid) {
+	public ContactBean(String result, int myuid, int cuid
+			) {
 		super();
 		this.result = result;
 		this.myuid = myuid;
@@ -40,9 +39,10 @@ public class ContactBean implements Serializable  {
 		this.cuid = cuid;
 	}
 
+
 	@Override
 	public String toString() {
-		return "ContactBean [result=" + result + ", myuid=" + myuid + ", cuid=" + cuid +"]";
+		return "ContactBean [result=" + result + ", myuid=" + myuid + ", cuid=" + cuid + "]";
 	}
 
 

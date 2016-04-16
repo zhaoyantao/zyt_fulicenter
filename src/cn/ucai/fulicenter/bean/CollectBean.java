@@ -3,9 +3,9 @@ package cn.ucai.fulicenter.bean;
 import java.io.Serializable;
 
 /**
- * Created by sks on 2016/4/15.
+ * Created by ucai on 2016/4/15.
  */
-public class CollectBean implements Serializable {
+public class collectBean  implements Serializable {
 
     /**
      * id : 7672
@@ -27,31 +27,17 @@ public class CollectBean implements Serializable {
     private String goodsImg;
     private long addTime;
 
-    public CollectBean(int userName, int goodsId, String goodsName, String goodsEnglishName, String goodsThumb, String goodsImg, long addTime) {
-        this.userName = userName;
-        this.goodsId = goodsId;
-        this.goodsName = goodsName;
-        this.goodsEnglishName = goodsEnglishName;
-        this.goodsThumb = goodsThumb;
-        this.goodsImg = goodsImg;
+    public collectBean() {
+    }
+
+    public collectBean(long addTime, String goodsImg, String goodsThumb, String goodsEnglishName, String goodsName, int goodsId, int userName) {
         this.addTime = addTime;
-    }
-
-    public CollectBean() {
-    }
-
-    @Override
-    public String toString() {
-        return "CollectBean{" +
-                "id=" + id +
-                ", userName=" + userName +
-                ", goodsId=" + goodsId +
-                ", goodsName='" + goodsName +
-                ", goodsEnglishName='" + goodsEnglishName +
-                ", goodsThumb='" + goodsThumb +
-                ", goodsImg='" + goodsImg +
-                ", addTime=" + addTime +
-                '}';
+        this.goodsImg = goodsImg;
+        this.goodsThumb = goodsThumb;
+        this.goodsEnglishName = goodsEnglishName;
+        this.goodsName = goodsName;
+        this.goodsId = goodsId;
+        this.userName = userName;
     }
 
     public int getId() {
@@ -116,5 +102,19 @@ public class CollectBean implements Serializable {
 
     public void setAddTime(long addTime) {
         this.addTime = addTime;
+    }
+
+    @Override
+    public String toString() {
+        return "collectBean{" +
+                "id=" + id +
+                ", userName=" + userName +
+                ", goodsId=" + goodsId +
+                ", goodsName='" + goodsName + '\'' +
+                ", goodsEnglishName='" + goodsEnglishName + '\'' +
+                ", goodsThumb='" + goodsThumb + '\'' +
+                ", goodsImg='" + goodsImg + '\'' +
+                ", addTime=" + addTime +
+                '}';
     }
 }

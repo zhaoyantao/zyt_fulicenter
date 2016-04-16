@@ -9,8 +9,8 @@ import com.android.volley.Response;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import cn.ucai.fulicenter.FuLiCenterApplication;
 import cn.ucai.fulicenter.I;
-import cn.ucai.fulicenter.SuperWeChatApplication;
 import cn.ucai.fulicenter.activity.BaseActivity;
 import cn.ucai.fulicenter.bean.UserBean;
 import cn.ucai.fulicenter.data.ApiParams;
@@ -62,7 +62,7 @@ public class DownloadContactListTask extends BaseActivity {
                 for (UserBean user:contacrs){
                     contact.add(user);
                 }
-                SuperWeChatApplication instance = SuperWeChatApplication.getInstance();
+                FuLiCenterApplication instance = FuLiCenterApplication.getInstance();
                ArrayList<UserBean> contactList = instance.getContactList();
                 Log.i("main", "Listener:" + contactList.size());
                 contactList.clear();
@@ -71,7 +71,7 @@ public class DownloadContactListTask extends BaseActivity {
                 Log.i("main", "Listener:" + contactList.size());
 
 
-                SuperWeChatApplication instance1 = new SuperWeChatApplication();
+                FuLiCenterApplication instance1 = new FuLiCenterApplication();
                 HashMap<String, UserBean> userList = instance.getUserList();
                 userList.clear();
                 for (UserBean user2 : contact) {

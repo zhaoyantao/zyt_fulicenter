@@ -131,15 +131,17 @@ public class NewFriendsMsgAdapter extends ArrayAdapter<InviteMessage> {
 			}
 
 			// 设置用户头像
+//			UserUtils.setUserBeanAvatar(msg.getFrom(),holder.avator);
 			try {
-				String path = new ApiParams().with(I.User.USER_NAME,msg.getFrom())
+				String path = new ApiParams()
+                        .with(I.User.USER_NAME, msg.getFrom())
                         .getRequestUrl(I.REQUEST_FIND_USER);
 				((NewFriendsMsgActivity)context).executeRequest(new GsonRequest<UserBean>(path, UserBean.class,
 						new Response.Listener<UserBean>() {
 							@Override
 							public void onResponse(UserBean userBean) {
-								UserUtils.setUserBeanNick(userBean,holder.name);
-								UserUtils.setUserBeanAvatar(userBean.getUserName(),holder.avator);
+								UserUtils.setUserBeanNick(userBean, holder.name);
+								UserUtils.setUserBeanAvatarNF(userBean, holder.avator);
 							}
 						},((NewFriendsMsgActivity)context).errorListener()));
 			} catch (Exception e) {

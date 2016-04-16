@@ -62,10 +62,9 @@ import cn.ucai.fulicenter.Constant;
 import cn.ucai.fulicenter.DemoHXSDKHelper;
 import cn.ucai.fulicenter.I;
 import cn.ucai.fulicenter.R;
-import cn.ucai.fulicenter.SuperWeChatApplication;
+import cn.ucai.fulicenter.FuLiCenterApplication;
 import cn.ucai.fulicenter.activity.AddContactActivity;
 import cn.ucai.fulicenter.activity.ChatActivity;
-import cn.ucai.fulicenter.activity.GroupsActivity;
 import cn.ucai.fulicenter.activity.MainActivity;
 import cn.ucai.fulicenter.activity.NewFriendsMsgActivity;
 import cn.ucai.fulicenter.activity.PublicChatRoomsActivity;
@@ -110,7 +109,7 @@ public class ContactlistFragment extends Fragment{
 	private ArrayList<UserBean> mcontactList;
      MainActivity mContext;
 
-	class HXContactSyncListener implements HXSDKHelper.HXSyncListener {
+	class HXContactSyncListener implements HXSyncListener {
 		@Override
 		public void onSyncSucess(final boolean success) {
 			EMLog.d(TAG, "on contact list sync success:" + success);
@@ -153,7 +152,7 @@ public class ContactlistFragment extends Fragment{
 	    
 	};
 	
-	class HXContactInfoSyncListener implements HXSDKHelper.HXSyncListener{
+	class HXContactInfoSyncListener implements HXSyncListener{
 
 		@Override
 		public void onSyncSucess(final boolean success) {
@@ -247,7 +246,7 @@ public class ContactlistFragment extends Fragment{
 					startActivity(new Intent(getActivity(), NewFriendsMsgActivity.class));
 				} else if (Constant.GROUP_USERNAME.equals(username)) {
 					// 进入群聊列表页面
-					startActivity(new Intent(getActivity(), GroupsActivity.class));
+//					startActivity(new Intent(getActivity(), GroupsActivity.class));
 				} else if(Constant.CHAT_ROOM.equals(username)){
 					//进入聊天室列表页面
 				    startActivity(new Intent(getActivity(), PublicChatRoomsActivity.class));
@@ -365,9 +364,9 @@ public class ContactlistFragment extends Fragment{
 		new Thread(new Runnable() {
 			public void run() {
 				try {
-                    ArrayList<UserBean> contactList = SuperWeChatApplication.getInstance().getContactList();
-                    HashMap<String, UserBean> userList = SuperWeChatApplication.getInstance().getUserList();
-                    HashMap<Integer, ContactBean> contact = SuperWeChatApplication.getInstance().getContacts();
+                    ArrayList<UserBean> contactList = FuLiCenterApplication.getInstance().getContactList();
+                    HashMap<String, UserBean> userList = FuLiCenterApplication.getInstance().getUserList();
+                    HashMap<Integer, ContactBean> contact = FuLiCenterApplication.getInstance().getContacts();
                     ArrayList<ContactBean> deleteContact = new ArrayList<ContactBean>();
                     ArrayList<UserBean> deleteUser = new ArrayList<UserBean>();
                     for (UserBean userBean : contactList) {
@@ -385,7 +384,7 @@ public class ContactlistFragment extends Fragment{
                                     .with(I.KEY_REQUEST, I.REQUEST_DELETE_CONTACT)
                                     .with(I.Contact.MYUID, removeContact.getMyuid()+"")
                                     .with(I.Contact.CUID, removeContact.getCuid()+"")
-                                    .getUrl(SuperWeChatApplication.SERVER_ROOT);
+                                    .getUrl(FuLiCenterApplication.SERVER_ROOT);
                             mContext.executeRequest(new GsonRequest<Boolean>(path,Boolean.class,
                                     responseDeleteListener(),mContext.errorListener()));
                         }
@@ -485,8 +484,8 @@ public class ContactlistFragment extends Fragment{
 
 	private void initContactList() {
 		Log.i("main", "initContactListmcontactList:" + mcontactList.size());
-//		mcontactList = SuperWeChatApplication.getInstance().getContactList();
-        ArrayList<UserBean> userList = SuperWeChatApplication.getInstance().getContactList();
+//		mcontactList = FuLiCenterApplication.getInstance().getContactList();
+        ArrayList<UserBean> userList = FuLiCenterApplication.getInstance().getContactList();
         mcontactList.clear();
         Log.i("main", "initContactListuserList:" + userList.size());
         mcontactList.addAll(userList);
@@ -612,7 +611,7 @@ public class ContactlistFragment extends Fragment{
 		public void onReceive(Context context, Intent intent) {
             Log.i("main", "ContactChangeReciver");
 //			mcontactList.clear();
-//			ArrayList<UserBean> contactsList= SuperWeChatApplication.getInstance().getContactList();
+//			ArrayList<UserBean> contactsList= FuLiCenterApplication.getInstance().getContactList();
 //			mcontactList.addAll(contactsList);
 //			for (UserBean user:contactsList) {
 //				UserUtils.setUserBeanHearder(user.getUserName(), user);
@@ -632,5 +631,13 @@ public class ContactlistFragment extends Fragment{
 		mContactChangeReciver = new ContactChangeReciver();
 		IntentFilter filter = new IntentFilter("update_contactsList");
 		getActivity().registerReceiver(mContactChangeReciver, filter);
+	}
+
+	@Override
+	public void onDestroyView() {
+		super.onDestroyView();
+		if (mContactChangeReciver != null) {
+			getActivity().unregisterReceiver(mContactChangeReciver);
+		}
 	}
 }

@@ -35,9 +35,9 @@ import com.easemob.chat.EMContactManager;
 import java.util.ArrayList;
 
 import cn.ucai.fulicenter.DemoHXSDKHelper;
+import cn.ucai.fulicenter.FuLiCenterApplication;
 import cn.ucai.fulicenter.I;
 import cn.ucai.fulicenter.R;
-import cn.ucai.fulicenter.SuperWeChatApplication;
 import cn.ucai.fulicenter.applib.controller.HXSDKHelper;
 import cn.ucai.fulicenter.bean.UserBean;
 import cn.ucai.fulicenter.data.ApiParams;
@@ -159,7 +159,7 @@ public class AddContactActivity extends BaseActivity{
 					startActivity(new Intent(mContext, AlertDialog.class).putExtra("msg", st));
 					return;
 				}
-				if(SuperWeChatApplication.getInstance().getUserName().equals(name)){
+				if(FuLiCenterApplication.getInstance().getUserName().equals(name)){
 					String str = getString(R.string.not_add_myself);
 					startActivity(new Intent(mContext, AlertDialog.class).putExtra("msg", str));
 					return;
@@ -183,7 +183,7 @@ public class AddContactActivity extends BaseActivity{
 			public void onResponse(UserBean userBean) {
 				if (userBean != null) {
 					mtvNothing.setVisibility(View.GONE);
-					ArrayList<UserBean> users = SuperWeChatApplication.getInstance().getContactList();
+					ArrayList<UserBean> users = FuLiCenterApplication.getInstance().getContactList();
 					if (users.contains(userBean)) {
 						Intent intent = new Intent();
 						intent.setClass(mContext, UserProfileActivity.class);
@@ -232,7 +232,7 @@ public class AddContactActivity extends BaseActivity{
 	 * @param view
 	 */
 	public void addContact(View view){
-		if(SuperWeChatApplication.getInstance().getUserName().equals(nameText.getText().toString())){
+		if(FuLiCenterApplication.getInstance().getUserName().equals(nameText.getText().toString())){
 			String str = getString(R.string.not_add_myself);
 			startActivity(new Intent(this, AlertDialog.class).putExtra("msg", str));
 			return;

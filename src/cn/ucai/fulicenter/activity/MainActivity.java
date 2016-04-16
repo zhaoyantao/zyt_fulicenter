@@ -36,7 +36,6 @@ import com.easemob.EMCallBack;
 import com.easemob.EMConnectionListener;
 import com.easemob.EMError;
 import com.easemob.EMEventListener;
-import com.easemob.EMGroupChangeListener;
 import com.easemob.EMNotifierEvent;
 import com.easemob.EMValueCallBack;
 import com.easemob.chat.EMChatManager;
@@ -44,12 +43,7 @@ import com.easemob.chat.EMContactListener;
 import com.easemob.chat.EMContactManager;
 import com.easemob.chat.EMConversation;
 import com.easemob.chat.EMConversation.EMConversationType;
-import com.easemob.chat.EMGroup;
-import com.easemob.chat.EMGroupManager;
 import com.easemob.chat.EMMessage;
-import com.easemob.chat.EMMessage.ChatType;
-import com.easemob.chat.EMMessage.Type;
-import com.easemob.chat.TextMessageBody;
 import com.easemob.util.EMLog;
 import com.easemob.util.HanziToPinyin;
 import com.easemob.util.NetUtils;
@@ -59,16 +53,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import cn.ucai.fulicenter.Constant;
 import cn.ucai.fulicenter.DemoHXSDKHelper;
+import cn.ucai.fulicenter.FuLiCenterApplication;
 import cn.ucai.fulicenter.I;
 import cn.ucai.fulicenter.R;
-import cn.ucai.fulicenter.SuperWeChatApplication;
 import cn.ucai.fulicenter.applib.controller.HXSDKHelper;
 import cn.ucai.fulicenter.bean.ContactBean;
-import cn.ucai.fulicenter.bean.GroupBean;
 import cn.ucai.fulicenter.bean.UserBean;
 import cn.ucai.fulicenter.data.ApiParams;
 import cn.ucai.fulicenter.data.GsonRequest;
@@ -80,7 +72,6 @@ import cn.ucai.fulicenter.domain.User;
 import cn.ucai.fulicenter.fragment.ChatAllHistoryFragment;
 import cn.ucai.fulicenter.fragment.ContactlistFragment;
 import cn.ucai.fulicenter.fragment.SettingsFragment;
-import cn.ucai.fulicenter.utils.CommonUtils;
 import cn.ucai.fulicenter.utils.Utils;
 
 public class MainActivity extends BaseActivity implements EMEventListener {
@@ -106,7 +97,6 @@ public class MainActivity extends BaseActivity implements EMEventListener {
 	private boolean isCurrentAccountRemoved = false;
 	
 	private MyConnectionListener connectionListener = null;
-	private MyGroupChangeListener groupChangeListener = null;
 
 	private Context mContext;
 
@@ -121,20 +111,20 @@ public class MainActivity extends BaseActivity implements EMEventListener {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		if (savedInstanceState != null && savedInstanceState.getBoolean(Constant.ACCOUNT_REMOVED, false)) {
-			// 防止被移除后，没点确定按钮然后按了home键，长期在后台又进app导致的crash
-			// 三个fragment里加的判断同理
-		    DemoHXSDKHelper.getInstance().logout(true,null);
-			finish();
-			startActivity(new Intent(this, LoginActivity.class));
-			return;
-		} else if (savedInstanceState != null && savedInstanceState.getBoolean("isConflict", false)) {
-			// 防止被T后，没点确定按钮然后按了home键，长期在后台又进app导致的crash
-			// 三个fragment里加的判断同理
-			finish();
-			startActivity(new Intent(this, LoginActivity.class));
-			return;
-		}
+//		if (savedInstanceState != null && savedInstanceState.getBoolean(Constant.ACCOUNT_REMOVED, false)) {
+//			// 防止被移除后，没点确定按钮然后按了home键，长期在后台又进app导致的crash
+//			// 三个fragment里加的判断同理
+//		    DemoHXSDKHelper.getInstance().logout(true,null);
+//			finish();
+//			startActivity(new Intent(this, LoginActivity.class));
+//			return;
+//		} else if (savedInstanceState != null && savedInstanceState.getBoolean("isConflict", false)) {
+//			// 防止被T后，没点确定按钮然后按了home键，长期在后台又进app导致的crash
+//			// 三个fragment里加的判断同理
+//			finish();
+//			startActivity(new Intent(this, LoginActivity.class));
+//			return;
+//		}
 		setContentView(R.layout.activity_main);
 		mContext=this;
 		initView();
@@ -176,10 +166,7 @@ public class MainActivity extends BaseActivity implements EMEventListener {
 		connectionListener = new MyConnectionListener();
 		EMChatManager.getInstance().addConnectionListener(connectionListener);
 		
-		groupChangeListener = new MyGroupChangeListener();
-		// 注册群聊相关的listener
-        EMGroupManager.getInstance().addGroupChangeListener(groupChangeListener);
-		
+
 		
 		//内部测试方法，请忽略
 		registerInternalDebugReceiver();
@@ -187,30 +174,30 @@ public class MainActivity extends BaseActivity implements EMEventListener {
 
 
 	
-	static void asyncFetchGroupsFromServer(){
-	    HXSDKHelper.getInstance().asyncFetchGroupsFromServer(new EMCallBack(){
-
-            @Override
-            public void onSuccess() {
-                HXSDKHelper.getInstance().noitifyGroupSyncListeners(true);
-                
-                if(HXSDKHelper.getInstance().isContactsSyncedWithServer()){
-                    HXSDKHelper.getInstance().notifyForRecevingEvents();
-                }
-            }
-
-            @Override
-            public void onError(int code, String message) {
-                HXSDKHelper.getInstance().noitifyGroupSyncListeners(false);                
-            }
-
-            @Override
-            public void onProgress(int progress, String status) {
-                
-            }
-            
-        });
-	}
+//	static void asyncFetchGroupsFromServer(){
+//	    HXSDKHelper.getInstance().asyncFetchGroupsFromServer(new EMCallBack(){
+//
+//            @Override
+//            public void onSuccess() {
+//                HXSDKHelper.getInstance().noitifyGroupSyncListeners(true);
+//
+//                if(HXSDKHelper.getInstance().isContactsSyncedWithServer()){
+//                    HXSDKHelper.getInstance().notifyForRecevingEvents();
+//                }
+//            }
+//
+//            @Override
+//            public void onError(int code, String message) {
+//                HXSDKHelper.getInstance().noitifyGroupSyncListeners(false);
+//            }
+//
+//            @Override
+//            public void onProgress(int progress, String status) {
+//
+//            }
+//
+//        });
+//	}
 	
 	static void asyncFetchContactsFromServer(){
 	    HXSDKHelper.getInstance().asyncFetchContactsFromServer(new EMValueCallBack<List<String>>(){
@@ -450,10 +437,6 @@ public class MainActivity extends BaseActivity implements EMEventListener {
 		    EMChatManager.getInstance().removeConnectionListener(connectionListener);
 		}
 		
-		if(groupChangeListener != null){
-		    EMGroupManager.getInstance().removeGroupChangeListener(groupChangeListener);
-		}
-		
 		try {
             unregisterReceiver(internalDebugReceiver);
         } catch (Exception e) {
@@ -533,7 +516,7 @@ public class MainActivity extends BaseActivity implements EMEventListener {
 		public void onContactAdded(List<String> usernameList) {			
 			// 保存增加的联系人
 			Map<String, User> localUsers = ((DemoHXSDKHelper)HXSDKHelper.getInstance()).getContactList();
-			ArrayList<UserBean> contactList = SuperWeChatApplication.getInstance().getContactList();
+			ArrayList<UserBean> contactList = FuLiCenterApplication.getInstance().getContactList();
 			Map<String, User> toAddUsers = new HashMap<String, User>();
 			ArrayList<String> otherName = new ArrayList<>();
 			boolean isAdd = false;
@@ -555,7 +538,7 @@ public class MainActivity extends BaseActivity implements EMEventListener {
 				contactListFragment.refresh();
 
 			//添加本地数据库好友关系列表数据
-			String userNane = SuperWeChatApplication.getInstance().getUserName();
+			String userNane = FuLiCenterApplication.getInstance().getUserName();
 			for (String cName : otherName) {
 				setAddContact(userNane, cName);
 			}
@@ -563,9 +546,9 @@ public class MainActivity extends BaseActivity implements EMEventListener {
 
 		@Override
 		public void onContactDeleted(final List<String> usernameList) {
-			ArrayList<UserBean> contactList = SuperWeChatApplication.getInstance().getContactList();
-			HashMap<String, UserBean> userList = SuperWeChatApplication.getInstance().getUserList();
-			HashMap<Integer, ContactBean> contact = SuperWeChatApplication.getInstance().getContacts();
+			ArrayList<UserBean> contactList = FuLiCenterApplication.getInstance().getContactList();
+			HashMap<String, UserBean> userList = FuLiCenterApplication.getInstance().getUserList();
+			HashMap<Integer, ContactBean> contact = FuLiCenterApplication.getInstance().getContacts();
 			ArrayList<ContactBean> deleteContact = new ArrayList<ContactBean>();
 			ArrayList<UserBean> deleteUser = new ArrayList<UserBean>();
 
@@ -585,7 +568,7 @@ public class MainActivity extends BaseActivity implements EMEventListener {
                                     .with(I.KEY_REQUEST, I.REQUEST_DELETE_CONTACT)
                                     .with(I.Contact.MYUID, removeContact.getMyuid()+"")
                                     .with(I.Contact.CUID, removeContact.getCuid()+"")
-                                    .getUrl(SuperWeChatApplication.SERVER_ROOT);
+                                    .getUrl(FuLiCenterApplication.SERVER_ROOT);
 							executeRequest(new GsonRequest<Boolean>(path,Boolean.class,
 									responseDeleteListener(),errorListener()));
 						} catch (Exception e) {
@@ -707,7 +690,7 @@ public class MainActivity extends BaseActivity implements EMEventListener {
 			@Override
 			public void onResponse(ContactBean contact) {
 				if (contact != null && "ok".equals(contact.getResult())) {
-					HashMap<Integer, ContactBean> contacts = SuperWeChatApplication.getInstance().getContacts();
+					HashMap<Integer, ContactBean> contacts = FuLiCenterApplication.getInstance().getContacts();
 					contacts.put(contact.getCuid(), contact);
 				}
 				try {
@@ -730,9 +713,9 @@ public class MainActivity extends BaseActivity implements EMEventListener {
 		return new Response.Listener<UserBean>() {
 			@Override
 			public void onResponse(UserBean userBean) {
-				ArrayList<UserBean> contactList = SuperWeChatApplication.getInstance().getContactList();
+				ArrayList<UserBean> contactList = FuLiCenterApplication.getInstance().getContactList();
 				contactList.add(userBean);
-				HashMap<String, UserBean> userList = SuperWeChatApplication.getInstance().getUserList();
+				HashMap<String, UserBean> userList = FuLiCenterApplication.getInstance().getUserList();
 				userList.put(userBean.getUserName(), userBean);
 
 				Intent intent = new Intent("update_contactsList");
@@ -762,9 +745,7 @@ public class MainActivity extends BaseActivity implements EMEventListener {
                     }
                 }.start();
             }else{
-                if(!groupSynced){
-                    asyncFetchGroupsFromServer();
-                }
+
                 
                 if(!contactSynced){
                     asyncFetchContactsFromServer();
@@ -813,193 +794,10 @@ public class MainActivity extends BaseActivity implements EMEventListener {
 		}
 	}
 
-	/**
-	 * MyGroupChangeListener
-	 */
-	public class MyGroupChangeListener implements EMGroupChangeListener {
-
-		@Override
-		public void onInvitationReceived(String groupId, String groupName, final String inviter, String reason) {
-			
-			boolean hasGroup = false;
-			for (EMGroup group : EMGroupManager.getInstance().getAllGroups()) {
-				if (group.getGroupId().equals(groupId)) {
-					hasGroup = true;
-					break;
-				}
-			}
-			if (!hasGroup)
-				return;
-
-			// 被邀请
-			String st3 = getResources().getString(R.string.Invite_you_to_join_a_group_chat);
-			EMMessage msg = EMMessage.createReceiveMessage(Type.TXT);
-			msg.setChatType(ChatType.GroupChat);
-			msg.setFrom(inviter);
-			msg.setTo(groupId);
-			msg.setMsgId(UUID.randomUUID().toString());
-			msg.addBody(new TextMessageBody(inviter + " " +st3));
-			// 保存邀请消息
-			EMChatManager.getInstance().saveMessage(msg);
-			// 提醒新消息
-			HXSDKHelper.getInstance().getNotifier().viberateAndPlayTone(msg);
-
-			runOnUiThread(new Runnable() {
-				public void run() {
-					updateUnreadLabel();
-					// 刷新ui
-					if (currentTabIndex == 0)
-						chatHistoryFragment.refresh();
-					if (CommonUtils.getTopActivity(MainActivity.this).equals(GroupsActivity.class.getName())) {
-						GroupsActivity.instance.onResume();
-					}
-
-				}
-			});
-
-		}
-
-		@Override
-		public void onInvitationAccpted(String groupId, String inviter, String reason) {
-			
-		}
-
-		@Override
-		public void onInvitationDeclined(String groupId, String invitee, String reason) {
-
-		}
-
-		@Override
-		public void onUserRemoved(String groupId, String groupName) {
-						
-			// 提示用户被T了，demo省略此步骤
-			// 刷新ui
-			runOnUiThread(new Runnable() {
-				public void run() {
-					try {
-						updateUnreadLabel();
-						if (currentTabIndex == 0)
-							chatHistoryFragment.refresh();
-						if (CommonUtils.getTopActivity(MainActivity.this).equals(GroupsActivity.class.getName())) {
-							GroupsActivity.instance.onResume();
-						}
-					} catch (Exception e) {
-						EMLog.e(TAG, "refresh exception " + e.getMessage());
-					}
-				}
-			});
-		}
-
-		@Override
-		public void onGroupDestroy(String groupId, String groupName) {
-			
-			// 群被解散
-			// 提示用户群被解散,demo省略
-			// 刷新ui
-			runOnUiThread(new Runnable() {
-				public void run() {
-					updateUnreadLabel();
-					if (currentTabIndex == 0)
-						chatHistoryFragment.refresh();
-					if (CommonUtils.getTopActivity(MainActivity.this).equals(GroupsActivity.class.getName())) {
-						GroupsActivity.instance.onResume();
-					}
-				}
-			});
-
-		}
-
-		@Override
-		public void onApplicationReceived(String groupId, String groupName, String applyer, String reason) {
-			
-			// 用户申请加入群聊
-			InviteMessage msg = new InviteMessage();
-			msg.setFrom(applyer);
-			msg.setTime(System.currentTimeMillis());
-			msg.setGroupId(groupId);
-			msg.setGroupName(groupName);
-			msg.setReason(reason);
-			Log.d(TAG, applyer + " 申请加入群聊：" + groupName);
-			msg.setStatus(InviteMesageStatus.BEAPPLYED);
-			notifyNewIviteMessage(msg);
-		}
-
-		@Override
-		public void onApplicationAccept(String groupId,  String groupName,  String accepter) {
-
-			String useName = SuperWeChatApplication.getInstance().getUserName();
-			try {
-				String path = new ApiParams()
-						.with(I.Group.GROUP_NAME, groupName)
-						.with(I.Group.MEMBERS,useName)
-						.getRequestUrl(I.REQUEST_ADD_GROUP_MEMBER);
-				executeRequest(new GsonRequest<GroupBean>(path,GroupBean.class,
-						responseAddMemberListener(),errorListener()));
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-
-			String st4 = getResources().getString(R.string.Agreed_to_your_group_chat_application);
-			// 加群申请被同意
-			EMMessage msg = EMMessage.createReceiveMessage(Type.TXT);
-			msg.setChatType(ChatType.GroupChat);
-			msg.setFrom(accepter);
-			msg.setTo(groupId);
-			msg.setMsgId(UUID.randomUUID().toString());
-			msg.addBody(new TextMessageBody(accepter + " " +st4));
-			// 保存同意消息
-			EMChatManager.getInstance().saveMessage(msg);
-			// 提醒新消息
-			HXSDKHelper.getInstance().getNotifier().viberateAndPlayTone(msg);
-
-			runOnUiThread(new Runnable() {
-				public void run() {
-					updateUnreadLabel();
-					// 刷新ui
-					if (currentTabIndex == 0)
-						chatHistoryFragment.refresh();
-					if (CommonUtils.getTopActivity(MainActivity.this).equals(GroupsActivity.class.getName())) {
-						GroupsActivity.instance.onResume();
-					}
-				}
-			});
-		}
-
-		@Override
-		public void onApplicationDeclined(String groupId, String groupName, String decliner, String reason) {
-			// 加群申请被拒绝，demo未实现
-		}
-	}
 
 
 
-	private Response.Listener<GroupBean> responseAddMemberListener() {
-		return new Response.Listener<GroupBean>() {
-			@Override
-			public void onResponse(GroupBean groupBean) {
-				if (groupBean != null) {
-					ArrayList<GroupBean> groupBeanArrayList = SuperWeChatApplication.getInstance().getGrouplist();
-					groupBeanArrayList.add(groupBean);
-					mContext.sendStickyBroadcast(new Intent("update_GroupList"));
-					HashMap<String, ArrayList<UserBean>> groupMembers = SuperWeChatApplication.getInstance().getGroupMembers();
-					ArrayList<UserBean> members = groupMembers.get(groupBean.getGroupId());
-					if (members == null) {
-						try {
-							String path = new ApiParams()
-									.with(I.Group.GROUP_ID, groupBean.getGroupId())
-									.getRequestUrl(I.REQUEST_DOWNLOAD_GROUP_MEMBERS);
-							executeRequest(new GsonRequest<UserBean[]>(path, UserBean[].class,
-									responseDownloadGroupMembers(groupBean.getGroupId()), errorListener()));
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					} else {
-						members.add(SuperWeChatApplication.getInstance().getUser());
-					}
-				}
-				}
-			};
-		}
+
 
 	private Response.Listener<UserBean[]> responseDownloadGroupMembers(final String groupId) {
 		return new Response.Listener<UserBean[]>() {
@@ -1007,14 +805,14 @@ public class MainActivity extends BaseActivity implements EMEventListener {
 			public void onResponse(UserBean[] userBeen) {
 				if (userBeen != null) {
 					ArrayList<UserBean> userBeen1 = Utils.array2List(userBeen);
-					HashMap<String, ArrayList<UserBean>> groupMembers = SuperWeChatApplication.getInstance().getGroupMembers();
+					HashMap<String, ArrayList<UserBean>> groupMembers = FuLiCenterApplication.getInstance().getGroupMembers();
 					ArrayList<UserBean> member = groupMembers.get(groupId);
 					if (member == null) {
 						member = new ArrayList<>();
 						groupMembers.put(groupId, member);
 					}
 					member.addAll(userBeen1);
-					member.add(SuperWeChatApplication.getInstance().getUser());
+					member.add(FuLiCenterApplication.getInstance().getUser());
 				}
 			}
 		};

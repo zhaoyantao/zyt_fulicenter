@@ -3,10 +3,9 @@ package cn.ucai.fulicenter.bean;
 import java.io.Serializable;
 
 /**
- * Created by sks on 2016/4/15.
+ * Created by ucai on 2016/4/15.
  */
-public class CategoryGroupBean implements Serializable {
-
+public class categoryGroupBean  implements Serializable {
 
     /**
      * id : 334
@@ -44,10 +43,10 @@ public class CategoryGroupBean implements Serializable {
 
     @Override
     public String toString() {
-        return "CategoryGroupBean{" +
+        return "categoryGroupBean{" +
                 "id=" + id +
-                ", name='" + name +
-                ", imageUrl='" + imageUrl +
+                ", name='" + name + '\'' +
+                ", imageUrl='" + imageUrl + '\'' +
                 '}';
     }
 }

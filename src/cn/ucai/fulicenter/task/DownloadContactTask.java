@@ -8,8 +8,8 @@ import com.android.volley.Response;
 
 import java.util.HashMap;
 
+import cn.ucai.fulicenter.FuLiCenterApplication;
 import cn.ucai.fulicenter.I;
-import cn.ucai.fulicenter.SuperWeChatApplication;
 import cn.ucai.fulicenter.activity.BaseActivity;
 import cn.ucai.fulicenter.bean.ContactBean;
 import cn.ucai.fulicenter.data.ApiParams;
@@ -57,7 +57,7 @@ public class DownloadContactTask extends BaseActivity {
                 for (ContactBean contact:contacrs){
                     map.put(contact.getCuid(), contact);
                 }
-                SuperWeChatApplication instance = SuperWeChatApplication.getInstance();
+                FuLiCenterApplication instance = FuLiCenterApplication.getInstance();
                 HashMap<Integer, ContactBean> contactMap = instance.getContacts();
                 contactMap.putAll(map);
                 Log.i("main", "Response.Listener<ContactBean[]>+contact");

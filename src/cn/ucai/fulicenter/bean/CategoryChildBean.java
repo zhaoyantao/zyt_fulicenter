@@ -3,9 +3,9 @@ package cn.ucai.fulicenter.bean;
 import java.io.Serializable;
 
 /**
- * Created by sks on 2016/4/15.
+ * Created by ucai on 2016/4/15.
  */
-public class CategoryChildBean implements Serializable {
+public class categoryChildBean  implements Serializable {
 
     /**
      * id : 348
@@ -53,11 +53,12 @@ public class CategoryChildBean implements Serializable {
 
     @Override
     public String toString() {
-        return "CategoryChildBean{" +
+        return "categoryChildBean{" +
                 "id=" + id +
                 ", parentId=" + parentId +
                 ", name='" + name + '\'' +
                 ", imageUrl='" + imageUrl + '\'' +
                 '}';
     }
+
 }

@@ -126,4 +126,12 @@
                 />
         </RelativeLayout>
     </LinearLayout>
+    <Button
+        android:id="@+id/btnAddorChat"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/top_bar_normal_bg"
+        android:textSize="25sp"
+        android:textColor="#fff"
+        android:visibility="gone"/>
 </LinearLayout>

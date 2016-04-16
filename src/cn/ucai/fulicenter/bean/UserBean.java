@@ -14,7 +14,6 @@ public class UserBean implements Serializable {
      * 对联系人按header分类，用于手机端右侧的字母栏快速定位联系人
      */
     private String header;
-
 	private int unreadMsgCount;
 	
 	public UserBean(){
@@ -31,7 +30,7 @@ public class UserBean implements Serializable {
 		this.password = password;
 	}
 	public UserBean(int id, String result, String userName, String nick,
-			String password, String avatar,int unreadMsgCount) {
+			String password, String avatar, int unreadMsgCount) {
 		super();
 		this.id = id;
 		this.result = result;
@@ -41,6 +40,8 @@ public class UserBean implements Serializable {
 		this.avatar = avatar;
 		this.unreadMsgCount = unreadMsgCount;
 	}
+
+
 
 	public int getId() {
 		return id;
@@ -116,7 +117,7 @@ public class UserBean implements Serializable {
 	@Override
 	public String toString() {
 		return "UserBean [id=" + id + ", result=" + result + ", userName=" + userName + ", nick=" + nick + ", password="
-				+ password + ", avatar=" + avatar + ", header=" + header + ", unreadMsgCount=" + unreadMsgCount + "]";
+				+ password + ", avatar=" + avatar  + ", header=" + header + ", unreadMsgCount=" + unreadMsgCount + "]";
 	}
 	
 }
