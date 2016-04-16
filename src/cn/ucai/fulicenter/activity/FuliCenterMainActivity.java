@@ -1,11 +1,15 @@
 package cn.ucai.fulicenter.activity;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
+import java.util.Arrays;
+
 import cn.ucai.fulicenter.R;
+
 
 /**
  * Created by sks on 2016/4/16.
@@ -13,19 +17,20 @@ import cn.ucai.fulicenter.R;
 public class FuliCenterMainActivity extends BaseActivity {
 
     TextView mtvCartHint;
-    RadioButton newGood;
-    RadioButton boutique;
-    RadioButton category;
-    RadioButton cart;
-    RadioButton personal_center;
+    private RadioButton newGood;
+    private RadioButton boutique;
+    private RadioButton category;
+    private RadioButton cart;
+    private RadioButton personal_center;
 
-    RadioButton[] mRedio = new RadioButton[5];
+    private RadioButton[] mRedio = new RadioButton[5];
     int index;
     int currentIndex = -1;
 
     @Override
     protected void onCreate(Bundle arg0) {
         super.onCreate(arg0);
+        setContentView(R.layout.activity_fulicenter_main);
         initView();
         setRadioDefaultChecked(currentIndex);
     }
@@ -45,7 +50,6 @@ public class FuliCenterMainActivity extends BaseActivity {
 
     private void initView() {
         mtvCartHint = (TextView) findViewById(R.id.tvCartHint);
-        
         newGood = (RadioButton) findViewById(R.id.layout_new_good);
         boutique = (RadioButton) findViewById(R.id.layout_boutique);
         category = (RadioButton) findViewById(R.id.layout_category);
