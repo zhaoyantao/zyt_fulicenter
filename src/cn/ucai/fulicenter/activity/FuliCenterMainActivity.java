@@ -1,14 +1,13 @@
 package cn.ucai.fulicenter.activity;
 
+import android.app.Fragment;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
-import java.util.Arrays;
-
 import cn.ucai.fulicenter.R;
+import cn.ucai.fulicenter.fragment.NewGoodFragment;
 
 
 /**
@@ -27,12 +26,23 @@ public class FuliCenterMainActivity extends BaseActivity {
     int index;
     int currentIndex = -1;
 
+    NewGoodFragment ngf;
     @Override
     protected void onCreate(Bundle arg0) {
         super.onCreate(arg0);
         setContentView(R.layout.activity_fulicenter_main);
         initView();
+        initFragment();
         setRadioDefaultChecked(currentIndex);
+        getSupportFragmentManager()
+                .beginTransaction()
+                .add(R.id.fragment_container,ngf)
+                .show(ngf)
+                .commit();
+    }
+
+    private void initFragment() {
+        ngf = new NewGoodFragment();
     }
 
     private void setRadioDefaultChecked(int index) {
@@ -61,6 +71,8 @@ public class FuliCenterMainActivity extends BaseActivity {
         mRedio[2] = category;
         mRedio[3] = cart;
         mRedio[4] = personal_center;
+
+
     }
 
     public void onCheckedChange(View view){
@@ -87,4 +99,9 @@ public class FuliCenterMainActivity extends BaseActivity {
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        setRadioDefaultChecked(currentIndex);
+    }
 }

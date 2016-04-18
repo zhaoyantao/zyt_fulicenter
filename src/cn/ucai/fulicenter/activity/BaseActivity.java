@@ -17,6 +17,7 @@ package cn.ucai.fulicenter.activity;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -40,8 +41,10 @@ Activity activity;
     protected void onResume() {
         super.onResume();
         // onresume时，取消notification显示
+//        Log.e("abc","HXSDKHelper.getInstance()"+HXSDKHelper.getInstance().toString());
+//        Log.e("abc","HXSDKHelper.getInstance().getNotifier()"+HXSDKHelper.getInstance().getNotifier().toString());
         HXSDKHelper.getInstance().getNotifier().reset();
-        
+//
         // umeng
         MobclickAgent.onResume(this);
     }

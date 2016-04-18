@@ -5,8 +5,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -34,6 +32,13 @@ public class NewGoodAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     private String footerText;
     private boolean isMore;
 
+    private int sortBy;
+
+
+    public void setSortBy(int sortBy) {
+        this.sortBy = sortBy;
+    }
+
     public boolean isMore() {
         return isMore;
     }
@@ -48,8 +53,10 @@ public class NewGoodAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         notifyDataSetChanged();
     }
 
-    public NewGoodAdapter(Context mContext, ArrayList<NewGoodBean> mGoodList) {
+
+    public NewGoodAdapter(Context mContext, int sortBy, ArrayList<NewGoodBean> mGoodList) {
         this.mContext = mContext;
+        this.sortBy = sortBy;
         this.mGoodList = mGoodList;
     }
 
@@ -114,5 +121,18 @@ public class NewGoodAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             tvGoodName = (TextView) itemView.findViewById(R.id.tv_good_name);
             tvGoodPrice = (TextView) itemView.findViewById(R.id.tv_good_price);
         }
+    }
+
+    public void addItem(ArrayList<NewGoodBean> list){
+        mGoodList.addAll(list);
+        notifyDataSetChanged();
+    }
+
+    public void initItem(ArrayList<NewGoodBean> list){
+        if(mGoodList!=null&&!mGoodList.isEmpty()){
+            mGoodList.clear();
+        }
+        mGoodList.addAll(list);
+        notifyDataSetChanged();
     }
 }

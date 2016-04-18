@@ -5,10 +5,15 @@ package cn.ucai.fulicenter;
  */
 public interface I {
 
+    public static final int SORT_BY_PRICE_ASC = 1;
+    public static final int SORT_BY_PRICE_DESC = 2;
+    public static final int SORT_BY_ADDTIME_ASC = 3;
+    public static final int SORT_BY_ADDTIME_DESC = 4;
+    public static final int CAT_ID = 0;
 
     public static final String AVATAR_PATH = "D:/project/github/SuperWeChat_Database/";
-    public static final String PAGE_ID = "pageId";
-    public static final String PAGE_SIZE = "pageSize";
+    public static final String PAGE_ID = "page_id";
+    public static final String PAGE_SIZE = "page_size";
     /** 上传图片的类型：user_avatar或group_icon */
     public static final String AVATAR_TYPE = "avatarType";
     public static final String FILE_NAME="file_name";
@@ -52,7 +57,7 @@ public interface I {
     //货币单位
     public static final String CURRENCY_TYPE_CNY = "CNY";
     public static final String CURRENCY_TYPE_USD = "USD";
-    
+
     class Cart{
         public static final String ID="id";
         public static final String GOODS_ID="goods_id";
