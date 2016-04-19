@@ -44,13 +44,13 @@ public class GoodDetailsBean  implements Serializable {
     private String shareUrl;
     @JsonProperty("isPromote")
     private boolean isPromote;
-    private propertiesBean[] properties;
+    private PropertyBean[] properties;
 
-    public propertiesBean[] getProperties() {
+    public PropertyBean[] getProperties() {
         return properties;
     }
 
-    public void setProperties(propertiesBean[] properties) {
+    public void setProperties(PropertyBean[] properties) {
         this.properties = properties;
     }
 

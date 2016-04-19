@@ -14,7 +14,6 @@
 package cn.ucai.fulicenter.adapter;
 
 import android.content.Context;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,10 +24,7 @@ import android.widget.TextView;
 import android.widget.TextView.BufferType;
 
 import com.android.volley.toolbox.NetworkImageView;
-import com.easemob.chat.EMChatManager;
-import com.easemob.chat.EMChatRoom;
 import com.easemob.chat.EMConversation;
-import com.easemob.chat.EMConversation.EMConversationType;
 import com.easemob.chat.EMGroup;
 import com.easemob.chat.EMGroupManager;
 import com.easemob.chat.EMMessage;
@@ -39,13 +35,11 @@ import com.easemob.util.EMLog;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import cn.ucai.fulicenter.Constant;
 import cn.ucai.fulicenter.DemoHXSDKHelper;
 import cn.ucai.fulicenter.R;
 import cn.ucai.fulicenter.applib.controller.HXSDKHelper;
-import cn.ucai.fulicenter.domain.RobotUser;
 import cn.ucai.fulicenter.utils.DateUtils;
 import cn.ucai.fulicenter.utils.SmileUtils;
 import cn.ucai.fulicenter.utils.UserUtils;
@@ -98,37 +92,25 @@ public class ChatAllHistoryAdapter extends ArrayAdapter<EMConversation> {
 		EMConversation conversation = getItem(position);
 		// 获取用户username或者群组groupid
 		String username = conversation.getUserName();
-		if (conversation.getType() == EMConversationType.GroupChat) {
-			// 群聊消息，显示群聊头像
-//			holder.avatar.setImageResource(R.drawable.group_icon);
-			EMGroup group = EMGroupManager.getInstance().getGroup(username);
-//			UserUtils.setGroupBeanAvatar(group.getGroupName(),holder.avatar);
-			holder.name.setText(group != null ? group.getGroupName() : username);
-		} else if(conversation.getType() == EMConversationType.ChatRoom){
-		    holder.avatar.setImageResource(R.drawable.group_icon);
-            EMChatRoom room = EMChatManager.getInstance().getChatRoom(username);
-            holder.name.setText(room != null && !TextUtils.isEmpty(room.getName()) ? room.getName() : username);
-		}else {
-//		    UserUtils.setUserAvatar(getContext(), username, holder.avatar);
-			UserUtils.setUserBeanAvatar(username,holder.avatar);
+//		if (conversation.getType() == EMConversationType.GroupChat) {
+//            // 群聊消息，显示群聊头像
+//			EMGroup group = EMGroupManager.getInstance().getGroup(username);
+//			holder.name.setText(group != null ? group.getGroupName() : username);
+//            if(group!=null) {
+//                UserUtils.setGroupAvatar(group.getGroupName(), holder.avatar);
+//            }else{
+//                UserUtils.setGroupAvatar("", holder.avatar);
+//            }
+//		} else {
+		    UserUtils.setUserBeanAvatar(username, holder.avatar);
 			if (username.equals(Constant.GROUP_USERNAME)) {
 				holder.name.setText("群聊");
+
 			} else if (username.equals(Constant.NEW_FRIENDS_USERNAME)) {
 				holder.name.setText("申请与通知");
 			}
 			UserUtils.setUserBeanNick(username, holder.name);
-			Map<String,RobotUser> robotMap=((DemoHXSDKHelper)HXSDKHelper.getInstance()).getRobotList();
-			if(robotMap!=null&&robotMap.containsKey(username)){
-				String nick = robotMap.get(username).getNick();
-				if(!TextUtils.isEmpty(nick)){
-					holder.name.setText(nick);
-				}else{
-					holder.name.setText(username);
-				}
-			}else{
-				UserUtils.setUserNick(username, holder.name);
-			}
-		}
+//		}
 
 		if (conversation.getUnreadMsgCount() > 0) {
 			// 显示与此用户的消息未读数

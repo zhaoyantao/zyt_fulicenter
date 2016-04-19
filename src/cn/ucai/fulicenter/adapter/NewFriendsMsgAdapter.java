@@ -18,6 +18,7 @@ import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -131,19 +132,18 @@ public class NewFriendsMsgAdapter extends ArrayAdapter<InviteMessage> {
 			}
 
 			// 设置用户头像
-//			UserUtils.setUserBeanAvatar(msg.getFrom(),holder.avator);
 			try {
-				String path = new ApiParams()
-                        .with(I.User.USER_NAME, msg.getFrom())
-                        .getRequestUrl(I.REQUEST_FIND_USER);
+				String path = new ApiParams().with(I.User.USER_NAME, msg.getFrom()).getRequestUrl(I.REQUEST_FIND_USER);
+                Log.e("main","set avatar path="+path);
 				((NewFriendsMsgActivity)context).executeRequest(new GsonRequest<UserBean>(path, UserBean.class,
 						new Response.Listener<UserBean>() {
 							@Override
 							public void onResponse(UserBean userBean) {
-								UserUtils.setUserBeanNick(userBean, holder.name);
-								UserUtils.setUserBeanAvatarNF(userBean, holder.avator);
+                                Log.e("main","set avatar user="+userBean);
+								UserUtils.setUserBeanNick(userBean,holder.name);
+                                UserUtils.setUserBeanAvatarNF(userBean,holder.avator);
 							}
-						},((NewFriendsMsgActivity)context).errorListener()));
+						}, ((NewFriendsMsgActivity) context).errorListener()));
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -152,11 +152,13 @@ public class NewFriendsMsgAdapter extends ArrayAdapter<InviteMessage> {
 		return convertView;
 	}
 
+
+
 	/**
 	 * 同意好友请求或者群申请
 	 * 
 	 * @param button
-	 * @param
+	 * @param msg
 	 */
 	private void acceptInvitation(final Button button, final InviteMessage msg) {
 		final ProgressDialog pd = new ProgressDialog(context);
@@ -197,7 +199,7 @@ public class NewFriendsMsgAdapter extends ArrayAdapter<InviteMessage> {
 						@Override
 						public void run() {
 							pd.dismiss();
-							Toast.makeText(context, str3 + e.getMessage(), Toast.LENGTH_LONG).show();
+							Toast.makeText(context, str3 + e.getMessage(), Toast.LENGTH_SHORT).show();
 						}
 					});
 

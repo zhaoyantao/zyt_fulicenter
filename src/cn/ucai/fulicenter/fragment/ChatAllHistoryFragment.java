@@ -1,11 +1,5 @@
 package cn.ucai.fulicenter.fragment;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Hashtable;
-import java.util.List;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -39,6 +33,13 @@ import android.widget.Toast;
 import com.easemob.chat.EMChatManager;
 import com.easemob.chat.EMConversation;
 import com.easemob.chat.EMConversation.EMConversationType;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Hashtable;
+import java.util.List;
+
 import cn.ucai.fulicenter.Constant;
 import cn.ucai.fulicenter.FuLiCenterApplication;
 import cn.ucai.fulicenter.R;
@@ -63,10 +64,6 @@ public class ChatAllHistoryFragment extends Fragment implements OnClickListener 
 	public TextView errorText;
 	private boolean hidden;
 	private List<EMConversation> conversationList = new ArrayList<EMConversation>();
-
-	CatactsChangeReceiver  mCtactsChangeReceiver;
-	GroupChangeReceiver mGroupChangeReceiver;
-	PublicChangeReceiver mPublicChangeReceiver;
 		
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -78,7 +75,6 @@ public class ChatAllHistoryFragment extends Fragment implements OnClickListener 
 		super.onActivityCreated(savedInstanceState);
 		if(savedInstanceState != null && savedInstanceState.getBoolean("isConflict", false))
             return;
-		registerReceiver();
 		inputMethodManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
 		errorItem = (RelativeLayout) getView().findViewById(R.id.rl_error_item);
 		errorText = (TextView) errorItem.findViewById(R.id.tv_connect_errormsg);		
@@ -98,7 +94,7 @@ public class ChatAllHistoryFragment extends Fragment implements OnClickListener 
 				EMConversation conversation = adapter.getItem(position);
 				String username = conversation.getUserName();
 				if (username.equals(FuLiCenterApplication.getInstance().getUserName()))
-					Toast.makeText(getActivity(), st2, 0).show();
+					Toast.makeText(getActivity(), st2, Toast.LENGTH_SHORT).show();
 				else {
 				    // 进入聊天页面
 				    Intent intent = new Intent(getActivity(), ChatActivity.class);
@@ -163,33 +159,8 @@ public class ChatAllHistoryFragment extends Fragment implements OnClickListener 
 				hideSoftKeyboard();
 			}
 		});
-		
+		registerContactListChangedReceiver();
 	}
-
-	private void registerReceiver() {
-		registerGroupReceiver();
-		registerContactReceiver();
-		registerPublicReceiver();
-	}
-
-	private void registerPublicReceiver() {
-		mPublicChangeReceiver = new PublicChangeReceiver();
-		IntentFilter filter=new IntentFilter("update_PublicGroupList");
-		getActivity().registerReceiver(mPublicChangeReceiver, filter);
-	}
-
-	private void registerContactReceiver() {
-		mCtactsChangeReceiver = new CatactsChangeReceiver();
-		IntentFilter filter=new IntentFilter("update_contactsList");
-		getActivity().registerReceiver(mCtactsChangeReceiver, filter);
-	}
-
-	private void registerGroupReceiver() {
-		mGroupChangeReceiver = new GroupChangeReceiver();
-		IntentFilter filter=new IntentFilter("update_GroupList");
-		getActivity().registerReceiver(mGroupChangeReceiver, filter);
-	}
-
 
 	void hideSoftKeyboard() {
 		if (getActivity().getWindow().getAttributes().softInputMode != WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN) {
@@ -243,8 +214,7 @@ public class ChatAllHistoryFragment extends Fragment implements OnClickListener 
 
 	/**
 	 * 获取所有会话
-	 * 
-	 * @param
+	 *
 	 * @return
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         +	 */
 	private List<EMConversation> loadConversationsWithRecentChat() {
@@ -283,7 +253,7 @@ public class ChatAllHistoryFragment extends Fragment implements OnClickListener 
 	/**
 	 * 根据最后一条消息的时间排序
 	 * 
-	 * @param
+	 * @param conversationList
 	 */
 	private void sortConversationByLastChatTime(List<Pair<Long, EMConversation>> conversationList) {
 		Collections.sort(conversationList, new Comparator<Pair<Long, EMConversation>>() {
@@ -313,6 +283,11 @@ public class ChatAllHistoryFragment extends Fragment implements OnClickListener 
 
 	@Override
 	public void onResume() {
+        Intent intent = ((MainActivity)getActivity()).getIntent();
+        String username = intent.getStringExtra("userId");
+        if(username!=null){
+            startActivity(new Intent(getActivity(), ChatActivity.class).putExtra("userId", username));
+        }
 		super.onResume();
 		if (!hidden && ! ((MainActivity)getActivity()).isConflict) {
 			refresh();
@@ -333,36 +308,26 @@ public class ChatAllHistoryFragment extends Fragment implements OnClickListener 
     public void onClick(View v) {        
     }
 
-	class CatactsChangeReceiver extends BroadcastReceiver {
+	class ContactListChangedReceiver extends BroadcastReceiver{
+
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			adapter.notifyDataSetChanged();
 		}
 	}
-	class GroupChangeReceiver extends BroadcastReceiver {
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			adapter.notifyDataSetChanged();
-		}
-	}
-	class PublicChangeReceiver extends BroadcastReceiver {
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			adapter.notifyDataSetChanged();
-		}
+	private ContactListChangedReceiver mContactListChangedReceiver;
+	private void registerContactListChangedReceiver(){
+		mContactListChangedReceiver = new ContactListChangedReceiver();
+		IntentFilter filter = new IntentFilter("update_contact_list");
+		getActivity().registerReceiver(mContactListChangedReceiver,filter);
 	}
 
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
-		if (mCtactsChangeReceiver != null) {
-			getActivity().unregisterReceiver(mCtactsChangeReceiver);
-		}
-		if (mGroupChangeReceiver != null) {
-			getActivity().unregisterReceiver(mGroupChangeReceiver);
-		}
-		if (mPublicChangeReceiver != null) {
-			getActivity().unregisterReceiver(mPublicChangeReceiver);
-		}
-	}
+
+    @Override
+    public void onDestroy() {
+        if(mContactListChangedReceiver!=null){
+            getActivity().unregisterReceiver(mContactListChangedReceiver);
+        }
+        super.onDestroy();
+    }
 }

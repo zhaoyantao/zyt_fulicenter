@@ -42,38 +42,42 @@ import cn.ucai.fulicenter.utils.Utils;
  * 
  */
 public class RegisterActivity extends BaseActivity {
-	private static final String TAG = RegisterActivity.class.getName();
-	RegisterActivity registerActivity;
-	ProgressDialog pd;
-    OnSetAvatarListener mSetAvatarListener;
-	String username,  usernick,  pwd;
-
+	public static final String TAG = RegisterActivity.class.getName();
+	RegisterActivity mContext;
 	private EditText userNameEditText;
 	private EditText userNickEditText;
 	private EditText passwordEditText;
 	private EditText confirmPwdEditText;
-	private ImageView userAvatar;
+	private ImageView mivAvatar;
+
+	ProgressDialog pd;
+
+    OnSetAvatarListener mOnSetAvatarListener;
+
+    String username;
+    String nick;
+    String pwd;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_register);
-		registerActivity=this;
+		mContext = this;
 		initView();
 		setListener();
 	}
 
 	private void setListener() {
-		setRegisterOnClickListener();
-		setLoginOnClickListener();
+		setLoginClickListener();
+		setRegisterClickListener();
         setAvatarClickListener();
-    }
+	}
 
     private void setAvatarClickListener() {
-        findViewById(R.id.Layout_userAvatar).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.layout_user_avatar).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mSetAvatarListener = new OnSetAvatarListener(registerActivity, R.id.layout_Resiger, getUserName(), "user_avatar");
+                mOnSetAvatarListener = new OnSetAvatarListener(mContext,R.id.layout_register,getUserName(),"user_avatar");
             }
         });
     }
@@ -81,55 +85,38 @@ public class RegisterActivity extends BaseActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode != RESULT_OK) {
+        if(resultCode!=RESULT_OK){
             return;
         }
-        mSetAvatarListener.setAvatar(requestCode,data,userAvatar);
+        mOnSetAvatarListener.setAvatar(requestCode,data,mivAvatar);
     }
 
-    private void setLoginOnClickListener() {
-		findViewById(R.id.BtnLogin).setOnClickListener(new View.OnClickListener() {
+    private void setLoginClickListener() {
+		findViewById(R.id.btnLogin).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				startActivity(new Intent(registerActivity,LoginActivity.class));
+                startActivity(new Intent(RegisterActivity.this,LoginActivity.class));
 			}
 		});
 	}
 
-	private void initView() {
-		userNameEditText = (EditText) findViewById(R.id.username);
-		userNickEditText = (EditText) findViewById(R.id.nick);
-		passwordEditText = (EditText) findViewById(R.id.password);
-		confirmPwdEditText = (EditText) findViewById(R.id.confirm_password);
-		userAvatar = (ImageView) findViewById(R.id.iv_avatar);
-	}
-
-	/**
-	 * 注册
-	 * 
-	 * @param
-	 */
-	public void setRegisterOnClickListener() {
-		findViewById(R.id.BtnRegister).setOnClickListener(new View.OnClickListener() {
+	private void setRegisterClickListener() {
+		findViewById(R.id.btnRegister).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				username = userNameEditText.getText().toString().trim();
-                usernick = userNickEditText.getText().toString().trim();
+                nick = userNickEditText.getText().toString().trim();
 				pwd = passwordEditText.getText().toString().trim();
 				String confirm_pwd = confirmPwdEditText.getText().toString().trim();
 				if (TextUtils.isEmpty(username)) {
 					userNameEditText.requestFocus();
                     userNameEditText.setError(getResources().getString(R.string.User_name_cannot_be_empty));
-                    return;
-				}	if (!username.matches("[\\w][\\w\\d_]+")) {
+					return;
+				} else if (!username.matches("[\\w][\\w\\d_]+")){
                     userNameEditText.requestFocus();
-                    userNameEditText.setError(getResources().getString(R.string.User_name_cannot_be_empty));
+                    userNameEditText.setError(getResources().getString(R.string.User_name_cannot_be_wd));
                     return;
-                }  else if (TextUtils.isEmpty(usernick)) {
-                   userNickEditText.requestFocus();
-                    userNickEditText.setError(getResources().getString(R.string.User_name_cannot_be_empty));
-                    return;
-                }else if (TextUtils.isEmpty(pwd)) {
+                } else if (TextUtils.isEmpty(pwd)) {
 					passwordEditText.requestFocus();
                     passwordEditText.setError(getResources().getString(R.string.Password_cannot_be_empty));
 					return;
@@ -138,90 +125,101 @@ public class RegisterActivity extends BaseActivity {
                     confirmPwdEditText.setError(getResources().getString(R.string.Confirm_password_cannot_be_empty));
 					return;
 				} else if (!pwd.equals(confirm_pwd)) {
-
                     confirmPwdEditText.requestFocus();
                     confirmPwdEditText.setError(getResources().getString(R.string.Two_input_password));
 					return;
 				}
 
 				if (!TextUtils.isEmpty(username) && !TextUtils.isEmpty(pwd)) {
-					pd = new ProgressDialog(registerActivity);
+					pd = new ProgressDialog(mContext);
 					pd.setMessage(getResources().getString(R.string.Is_the_registered));
 					pd.show();
+
+                    registerAppServer();
+
 				}
-				registerApp();
-            }
+			}
 		});
 	}
 
-    private void registerApp() {
-
-		try {
-			String path = new ApiParams()
-                    .with(I.User.USER_NAME, username)
-                    .with(I.User.NICK, usernick)
-                    .with(I.User.PASSWORD, pwd)
+    private void registerAppServer(){
+        //先注册本地的服务器 REQUEST_REGISTER -->volley
+        //注册成功后，上传头像 uploadAvatar
+        //注册环信的服务器 registerEMServer
+        //如果环信的服务器注册失败，删除服务器上面的账号和头像 unRegister-->volley
+        try {
+            String path = new ApiParams()
+                    .with(I.User.USER_NAME,username)
+                    .with(I.User.NICK,nick)
+                    .with(I.User.PASSWORD,pwd)
                     .getRequestUrl(I.REQUEST_REGISTER);
-			executeRequest(new GsonRequest<MessageBean>(path, MessageBean.class, responseRegisterListener(), errorListener()));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	private Response.Listener<MessageBean> responseRegisterListener() {
-		return new Response.Listener<MessageBean>() {
-			@Override
-			public void onResponse(MessageBean messageBean) {
-				if (messageBean != null && messageBean.isSuccess()) {
-					new Thread(new Runnable() {
-						@Override
-						public void run() {
-							try {
-								boolean isSuccess= NetUtil.uploadAvatar(registerActivity,"user_avatar",username);
-								if (isSuccess) {
-									registerEMServer();
-								}else {
-									pd.dismiss();
-									Utils.showToast(registerActivity, R.string.upload_avatar_failed, Toast.LENGTH_SHORT);
-								}
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
-
-						}
-					}).start();
-				}else{
-					try {
-						String path = new ApiParams()
-                                .with(I.User.USER_NAME, username)
+            executeRequest(new GsonRequest<MessageBean>(path,MessageBean.class,
+                    responseRegisterListener(), errorListener()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    private Response.Listener<MessageBean> responseRegisterListener() {
+        return new Response.Listener<MessageBean>() {
+            @Override
+            public void onResponse(MessageBean messageBean) {
+                if(messageBean!=null&&messageBean.isSuccess()){
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                boolean isSuccess = NetUtil.uploadAvatar(mContext, "user_avatar", username);
+                                if(isSuccess){
+                                    registerEMServer();
+                                } else {
+                                    pd.dismiss();
+                                    Utils.showToast(mContext,R.string.upload_avatar_failed,Toast.LENGTH_SHORT);
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }).start();
+                }else{
+                    try {
+                        String path = new ApiParams()
+                                .with(I.User.USER_NAME,username)
                                 .getRequestUrl(I.REQUEST_UNREGISTER);
-						executeRequest(new GsonRequest<MessageBean>(path, MessageBean.class, responseUnRegisterListener(), errorListener()));
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-					pd.dismiss();
-					Utils.showToast(registerActivity, R.string.Registration_failed, Toast.LENGTH_SHORT);
-				}
-			}
-		};
-	}
+                        executeRequest(new GsonRequest<MessageBean>(path,MessageBean.class,
+                                responseUnRegisterListener(),errorListener()));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    pd.dismiss();
+                    Utils.showToast(mContext,R.string.Registration_failed,Toast.LENGTH_SHORT);
+                }
+            }
+        };
+    }
+    private Response.Listener<MessageBean> responseUnRegisterListener() {
+        return new Response.Listener<MessageBean>() {
+            @Override
+            public void onResponse(MessageBean messageBean) {
+                if(!messageBean.isSuccess()){
+                    Utils.showToast(mContext,R.string.cancel_register_failed,Toast.LENGTH_SHORT);
+                }
+            }
+        };
+    }
 
-	private Response.Listener<MessageBean> responseUnRegisterListener() {
-		return new Response.Listener<MessageBean>() {
-			@Override
-			public void onResponse(MessageBean messageBean) {
-				if (!messageBean.isSuccess()) {
-					Utils.showToast(registerActivity, R.string.cancel_register_failed, Toast.LENGTH_SHORT);
-				}
-			}
-		};
+	private void initView() {
+		userNameEditText = (EditText) findViewById(R.id.etUserName);
+        userNickEditText = (EditText) findViewById(R.id.etNick);
+		passwordEditText = (EditText) findViewById(R.id.etPassword);
+		confirmPwdEditText = (EditText) findViewById(R.id.etConfirmPassword);
+        mivAvatar = (ImageView) findViewById(R.id.iv_avatar);
 	}
 
 	public void back(View view) {
 		finish();
 	}
 
-	public void registerEMServer() {
+	private void registerEMServer(){
 		new Thread(new Runnable() {
 			public void run() {
 				try {
@@ -261,12 +259,13 @@ public class RegisterActivity extends BaseActivity {
 		}).start();
 	}
 
-    private String getUserName() {
-        String userName = userNameEditText.getText().toString();
-        if (userName.isEmpty()) {
-            Toast.makeText(registerActivity,"请先输入用户名",Toast.LENGTH_SHORT).show();
+    public String getUserName() {
+        String username = userNameEditText.getText().toString();
+        if(username.isEmpty()){
+            Utils.showToast(mContext,"请先输入用户名",Toast.LENGTH_SHORT);
+            return null;
         }
-        return userName;
-    }
 
+        return username;
+    }
 }

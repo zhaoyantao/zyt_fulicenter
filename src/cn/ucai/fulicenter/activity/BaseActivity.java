@@ -14,12 +14,9 @@
 
 package cn.ucai.fulicenter.activity;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -30,21 +27,20 @@ import cn.ucai.fulicenter.applib.controller.HXSDKHelper;
 import cn.ucai.fulicenter.data.RequestManager;
 
 public class BaseActivity extends FragmentActivity {
-Activity activity;
+    BaseActivity activity;
+
     @Override
     protected void onCreate(Bundle arg0) {
         super.onCreate(arg0);
-        this.activity=this;
+        activity = this;
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         // onresume时，取消notification显示
-//        Log.e("abc","HXSDKHelper.getInstance()"+HXSDKHelper.getInstance().toString());
-//        Log.e("abc","HXSDKHelper.getInstance().getNotifier()"+HXSDKHelper.getInstance().getNotifier().toString());
-        HXSDKHelper.getInstance().getNotifier().reset();
-//
+//        HXSDKHelper.getInstance().getNotifier().reset();
+        
         // umeng
         MobclickAgent.onResume(this);
     }
@@ -70,19 +66,20 @@ Activity activity;
     protected void onStop() {
         super.onStop();
         RequestManager.cancelAll(activity);
-
     }
 
-    public void executeRequest(Request<?> request) {
+    public void executeRequest(Request<?> request){
         RequestManager.addRequest(request,activity);
     }
-
-    public Response.ErrorListener errorListener() {
-        return new  Response.ErrorListener(){
+    public Response.ErrorListener errorListener(){
+        return new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError volleyError) {
-                cn.ucai.fulicenter.utils.Utils.showToast(activity, volleyError.getMessage(), Toast.LENGTH_SHORT);
+                System.out.print(volleyError.getMessage());
             }
         };
+    }
+    public <T> T getViewById(int id) {
+        return (T)findViewById(id);
     }
 }

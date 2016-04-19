@@ -364,10 +364,10 @@ public class SettingsFragment extends Fragment implements OnClickListener {
 			public void onSuccess() {
 				getActivity().runOnUiThread(new Runnable() {
 					public void run() {
-						FuLiCenterApplication insatnce = FuLiCenterApplication.getInstance();
-						insatnce.getContactList().clear();
-						insatnce.getUserList().clear();
-						insatnce.getContacts().clear();
+						FuLiCenterApplication instance = FuLiCenterApplication.getInstance();
+						instance.getContactList().clear();
+						instance.getUserList().clear();
+						instance.getContacts().clear();
 						pd.dismiss();
 						// 重新显示登陆页面
 						((MainActivity) getActivity()).finish();

@@ -23,8 +23,8 @@ import android.widget.ListView;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import cn.ucai.fulicenter.Constant;
@@ -34,14 +34,13 @@ import cn.ucai.fulicenter.adapter.ContactAdapter;
 import cn.ucai.fulicenter.bean.UserBean;
 import cn.ucai.fulicenter.widget.Sidebar;
 
+
 public class PickContactNoCheckboxActivity extends BaseActivity {
 
 	private ListView listView;
 	private Sidebar sidebar;
 	protected ContactAdapter contactAdapter;
 	private ArrayList<UserBean> contactList;
-
-
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -80,9 +79,8 @@ public class PickContactNoCheckboxActivity extends BaseActivity {
 
 	private void getContactList() {
 		contactList.clear();
-//		Map<String, User> users = ((DemoHXSDKHelper)HXSDKHelper.getInstance()).getContactList();
-		Map<String, UserBean> users = FuLiCenterApplication.getInstance().getUserList();
-		Iterator<Entry<String, UserBean>> iterator = users.entrySet().iterator();
+        HashMap<String, UserBean> users = FuLiCenterApplication.getInstance().getUserList();
+        Iterator<Entry<String, UserBean>> iterator = users.entrySet().iterator();
 		while (iterator.hasNext()) {
 			Entry<String, UserBean> entry = iterator.next();
 			if (!entry.getKey().equals(Constant.NEW_FRIENDS_USERNAME) && !entry.getKey().equals(Constant.GROUP_USERNAME) && !entry.getKey().equals(Constant.CHAT_ROOM) && !entry.getKey().equals(Constant.CHAT_ROBOT))

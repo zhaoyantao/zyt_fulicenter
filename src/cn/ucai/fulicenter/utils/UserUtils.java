@@ -98,11 +98,11 @@ public class UserUtils {
         if (user != null) {
             setAvatar(imageView, user);
         } else {
-            for (UserBean unUser : ChatActivity.currentMemvers) {
-                if (unUser.getUserName().equals(username)) {
-                    setAvatar(imageView, unUser);
-                }
-            }
+//            for (UserBean unUser : ChatActivity.currentMemvers) {
+//                if (unUser.getUserName().equals(username)) {
+//                    setAvatar(imageView, unUser);
+//                }
+//            }
         }
     }
 
@@ -155,12 +155,12 @@ public class UserUtils {
         if (user != null) {
             textView.setText(user.getNick());
         }else{
-            for (UserBean unUser : ChatActivity.currentMemvers) {
-                if (unUser.getUserName().equals(username)) {
-                    textView.setText(unUser.getNick());
-                }
-            }
-//            textView.setText(username);
+//            for (UserBean unUser : ChatActivity.currentMemvers) {
+//                if (unUser.getUserName().equals(username)) {
+//                    textView.setText(unUser.getNick());
+//                }
+//            }
+////            textView.setText(username);
         }
     }
     public static void setUserBeanNick(UserBean userBean,TextView textView){
