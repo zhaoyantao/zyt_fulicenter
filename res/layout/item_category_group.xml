@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="50dp"
+    android:background="@drawable/divid_explist_group"
+    android:id="@+id/layout_category_group">
+
+    <com.android.volley.toolbox.NetworkImageView
+        android:id="@+id/iv_category_group"
+        android:layout_width="85dp"
+        android:layout_height="50dp"
+        android:scaleType="centerCrop"
+        android:paddingLeft="35dp"
+        android:src="@drawable/nopic"
+        android:background="#00000000" />
+
+    <TextView
+        android:id="@+id/tv_category"
+        android:layout_toRightOf="@+id/iv_category_group"
+        android:paddingLeft="20dp"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:text="鞋子"
+        android:gravity="center_vertical"
+        android:textSize="20dp"
+        android:textColor="#000"/>
+
+    <ImageView
+        android:id="@+id/iv_category_group_icon"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:src="@drawable/expand_on"
+        android:layout_marginRight="20dp"
+        android:layout_centerVertical="true"
+        android:layout_alignParentRight="true"/>
+</RelativeLayout>
