@@ -83,6 +83,12 @@ public class CategoryAdapter extends BaseExpandableListAdapter {
         holder.mCategoryGroupName.setText(group.getName());
         String url = I.DOWNLOAD_DOWNLOAD_CATEGORY_GROUP_IMAGE_URL+group.getImageUrl();
         ImageUtils.setThumb(url,holder.mCategoryGroupImage);
+
+        if(isExpanded){
+            holder.mCategoryGroupIcon.setImageResource(R.drawable.expand_off);
+        }else{
+            holder.mCategoryGroupIcon.setImageResource(R.drawable.expand_on);
+        }
         return layout;
     }
 
@@ -146,7 +152,6 @@ public class CategoryAdapter extends BaseExpandableListAdapter {
             mCategoryChildImage = (NetworkImageView) itemView.findViewById(R.id.iv_category_child);
             mCategoryChildName = (TextView) itemView.findViewById(R.id.tv_category_child);
         }
-
     }
 
     public void addItems(ArrayList<CategoryGroupBean> groupList,

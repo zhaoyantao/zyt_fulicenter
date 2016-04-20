@@ -3,28 +3,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#eff2f6"
-    android:orientation="vertical" >
+    android:orientation="vertical">
+
+    <include layout="@layout/common_head_title_white_login"/>
 
     <RelativeLayout
+        android:layout_marginTop="10dp"
         android:layout_width="match_parent"
         android:layout_height="0dip"
-        android:layout_weight="1" >
-        <TextView
-            android:layout_centerInParent="true"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:drawableLeft="@drawable/mobile"
-            android:text="@string/app_name"
-            android:textSize="20sp"
-            android:textColor="#000"
-            android:drawablePadding="5dp"
-            android:gravity="center_vertical"/>
-    </RelativeLayout>
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dip"
-        android:layout_weight="1" >
+        android:layout_weight="1">
 
         <RelativeLayout
             android:id="@+id/rl_username"
@@ -32,7 +19,7 @@
             android:layout_height="54dp"
             android:layout_marginLeft="28dp"
             android:layout_marginRight="28dp"
-            android:background="#fff" >
+            android:background="#fff">
 
             <ImageView
                 android:id="@+id/iv_username"
@@ -64,7 +51,7 @@
             android:layout_marginLeft="28dp"
             android:layout_marginRight="28dp"
             android:layout_marginTop="10dp"
-            android:background="#fff" >
+            android:background="#fff">
 
             <ImageView
                 android:id="@+id/iv_password"
@@ -87,54 +74,48 @@
                 android:singleLine="true"
                 android:textSize="18sp" />
         </RelativeLayout>
-
-        <LinearLayout
+        <Button
+            android:layout_marginTop="30dp"
+            android:layout_below="@id/rl_password"
+            android:id="@+id/btnLogin"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/rl_password"
-            android:layout_marginLeft="30dp"
-            android:layout_marginRight="30dp"
-            android:layout_marginTop="30dp"
-            android:orientation="horizontal" >
+            android:layout_marginLeft="10dip"
+            android:layout_marginRight="10dip"
+            android:background="@drawable/tb_btn_login_orange_normal"
+            android:gravity="center"
+            android:paddingBottom="7dp"
+            android:paddingTop="7dp"
+            android:text="@string/login"
+            android:textColor="@android:color/white"
+            android:textSize="18sp" />
 
-            <Button
-                android:id="@+id/btnRegister"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="10dip"
-                android:layout_marginRight="10dip"
-                android:layout_weight="1"
-                android:background="@drawable/button_register_bg"
-                android:gravity="center"
-                android:paddingBottom="7dp"
-                android:paddingTop="7dp"
-                android:text="@string/register"
-                android:textColor="@android:color/black"
-                android:textSize="18sp" />
+        <Button
+            android:layout_marginTop="10dp"
+            android:layout_below="@id/btnLogin"
+            android:id="@+id/btnRegister"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dip"
+            android:layout_marginRight="10dip"
+            android:background="@drawable/button_register_bg"
+            android:gravity="center"
+            android:paddingBottom="7dp"
+            android:paddingTop="7dp"
+            android:text="@string/register"
+            android:textColor="@android:color/black"
+            android:textSize="18sp" />
 
-            <Button
-                android:id="@+id/btnLogin"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="10dip"
-                android:layout_marginRight="10dip"
-                android:layout_weight="1"
-                android:background="@drawable/button_login_bg"
-                android:gravity="center"
-                android:paddingBottom="7dp"
-                android:paddingTop="7dp"
-                android:text="@string/login"
-                android:textColor="@android:color/white"
-                android:textSize="18sp" />
-        </LinearLayout>
+
     </RelativeLayout>
+
     <Button
         android:id="@+id/btnUrl"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
+        android:background="@null"
         android:text="设置服务器的IP地址"
-        android:textColor="#000"
-        android:background="@null"/>
+        android:textColor="#000" />
 
 </LinearLayout>
