@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * Created by ucai on 2016/4/15.
  */
-public class collectBean  implements Serializable {
+public class collectBean implements Serializable {
 
     /**
      * id : 7672

@@ -1,78 +1,113 @@
 package cn.ucai.fulicenter.activity;
 
-import android.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.view.View;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
 import cn.ucai.fulicenter.R;
+import cn.ucai.fulicenter.fragment.BoutiqueFragment;
+import cn.ucai.fulicenter.fragment.CategoryFragment;
 import cn.ucai.fulicenter.fragment.NewGoodFragment;
-
+import cn.ucai.fulicenter.fragment.PersonalCenterFragment;
 
 /**
- * Created by sks on 2016/4/16.
+ * Created by clawpo on 16/4/16.
  */
-public class FuliCenterMainActivity extends BaseActivity {
+public class FuLiCenterMainActivity extends BaseActivity {
 
+    // 菜单项按钮
     TextView mtvCartHint;
-    private RadioButton newGood;
-    private RadioButton boutique;
-    private RadioButton category;
-    private RadioButton cart;
-    private RadioButton personal_center;
+    RadioButton mLayoutCart;
+    RadioButton mLayoutNewGood;
+    RadioButton mLayoutBoutique;
+    RadioButton mLayoutCategory;
+    RadioButton mLayoutPersonalCenter;
 
-    private RadioButton[] mRedio = new RadioButton[5];
+    NewGoodFragment mNewGoodFragment;
+    BoutiqueFragment mBoutiqueFragment;
+    CategoryFragment mCategoryFragment;
+    PersonalCenterFragment mPersonalCenterFragment;
+    Fragment[] mFragments = new Fragment[5];
+
     int index;
-    int currentIndex = -1;
+    int currentIndex = 0;
+    RadioButton[] mRadios = new RadioButton[5];
 
-    NewGoodFragment ngf;
     @Override
-    protected void onCreate(Bundle arg0) {
-        super.onCreate(arg0);
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fulicenter_main);
         initView();
         initFragment();
-        setRadioDefaultChecked(currentIndex);
+        // 添加显示第一个fragment
         getSupportFragmentManager()
                 .beginTransaction()
-                .add(R.id.fragment_container,ngf)
-                .show(ngf)
+                .add(R.id.fragment_container, mNewGoodFragment)
+                .add(R.id.fragment_container, mBoutiqueFragment)
+                .add(R.id.fragment_container, mCategoryFragment)
+                .hide(mBoutiqueFragment).hide(mCategoryFragment)
+                .show(mNewGoodFragment)
                 .commit();
     }
 
     private void initFragment() {
-        ngf = new NewGoodFragment();
+        mNewGoodFragment = new NewGoodFragment();
+        mBoutiqueFragment = new BoutiqueFragment();
+        mCategoryFragment = new CategoryFragment();
+        mPersonalCenterFragment = new PersonalCenterFragment();
+        mFragments[0] = mNewGoodFragment;
+        mFragments[1] = mBoutiqueFragment;
+        mFragments[2] = mCategoryFragment;
+        mFragments[4] = mPersonalCenterFragment;
+    }
+
+    private void initNewGood(){
+        index = 0;
+        currentIndex = 0;
+        FragmentTransaction trx = getSupportFragmentManager().beginTransaction();
+        trx.hide(mFragments[currentIndex]);
+        if (!mFragments[index].isAdded()) {
+            trx.add(R.id.fragment_container, mFragments[index]);
+        }
+        trx.show(mFragments[index]).commit();
+        mLayoutNewGood.setChecked(true);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        setRadioDefaultChecked(currentIndex);
     }
 
     private void setRadioDefaultChecked(int index) {
-        if(index==-1){
-            index=0;
+        if(index == -1){
+            index = 0;
         }
-        for(int i=0;i<mRedio.length;i++){
+        for(int i = 0; i< mRadios.length; i++){
             if(i==index){
-                mRedio[i].setChecked(true);
+                mRadios[i].setChecked(true);
             }else{
-                mRedio[i].setChecked(false);
+                mRadios[i].setChecked(false);
             }
         }
+
     }
 
     private void initView() {
         mtvCartHint = (TextView) findViewById(R.id.tvCartHint);
-        newGood = (RadioButton) findViewById(R.id.layout_new_good);
-        boutique = (RadioButton) findViewById(R.id.layout_boutique);
-        category = (RadioButton) findViewById(R.id.layout_category);
-        cart = (RadioButton) findViewById(R.id.layout_cart);
-        personal_center = (RadioButton) findViewById(R.id.layout_personal_center);
-
-        mRedio[0] = newGood;
-        mRedio[1] = boutique;
-        mRedio[2] = category;
-        mRedio[3] = cart;
-        mRedio[4] = personal_center;
-
-
+        mLayoutNewGood = (RadioButton) findViewById(R.id.layout_new_good);
+        mLayoutBoutique = (RadioButton) findViewById(R.id.layout_boutique);
+        mLayoutCategory = (RadioButton) findViewById(R.id.layout_category);
+        mLayoutCart = (RadioButton) findViewById(R.id.layout_cart);
+        mLayoutPersonalCenter = (RadioButton) findViewById(R.id.layout_personal_center);
+        mRadios[0] = mLayoutNewGood;
+        mRadios[1] = mLayoutBoutique;
+        mRadios[2] = mLayoutCategory;
+        mRadios[3] = mLayoutCart;
+        mRadios[4] = mLayoutPersonalCenter;
     }
 
     public void onCheckedChange(View view){
@@ -93,15 +128,16 @@ public class FuliCenterMainActivity extends BaseActivity {
                 index = 4;
                 break;
         }
-        if(currentIndex!=index){
-            currentIndex = index;
-            setRadioDefaultChecked(index);
-        }
-    }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        setRadioDefaultChecked(currentIndex);
+        if (currentIndex != index) {
+            FragmentTransaction trx = getSupportFragmentManager().beginTransaction();
+            trx.hide(mFragments[currentIndex]);
+            if (!mFragments[index].isAdded()) {
+                trx.add(R.id.fragment_container, mFragments[index]);
+            }
+            trx.show(mFragments[index]).commit();
+        }
+        setRadioDefaultChecked(index);
+        currentIndex = index;
     }
 }
