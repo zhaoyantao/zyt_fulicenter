@@ -1,56 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:id="@+id/layout_boutique">
+    android:background="@color/white"
+    android:layout_margin="5dp"
+    android:id="@+id/layout_boutique"
+    >
+
+
+    <TextView
+        android:id="@+id/tv_good1_name"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:textColor="@color/item_good_text"
+        android:textSize="13sp"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="3dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:text="商品名称商品名称商品名称商品名称商品名称商品名称商品名称商品名称商品名称商品名称"
+        android:layout_alignParentRight="true"
+
+        />
+    <TextView
+        android:id="@+id/tv_good2_name"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:textColor="@color/item_good_text"
+        android:textSize="13sp"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="3dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:text="商品名称商品名称商品名称商品名称商品名称商品名称商品名称商品名称商品名称商品名称"
+        android:layout_below="@id/tv_good1_name"
+        android:layout_alignParentRight="true"
+        />
+    <TextView
+        android:id="@+id/tv_good3_name"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:textColor="@color/item_good_text"
+        android:textSize="13sp"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="3dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:text="商品名称商品名称商品名称商品名称商品名称商品名称商品名称商品名称商品名称商品名称"
+        android:layout_below="@id/tv_good2_name"
+        android:layout_alignParentRight="true"
+        />
     <com.android.volley.toolbox.NetworkImageView
-        android:id="@+id/niv_boutique"
-        android:layout_width="0dp"
+        android:id="@+id/niv_boutique_thumb"
+        android:layout_width="200dp"
         android:layout_height="200dp"
         android:scaleType="fitXY"
+        android:layout_gravity="center"
         android:src="@drawable/nopic"
-        android:layout_weight="1"
-        />
-    <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="200dp"
-        android:orientation="vertical"
-        android:layout_weight="1"
-        android:weightSum="3">
-        <TextView
-            android:id="@+id/boutique_text1"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:text="1"
-            android:gravity="center"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:textColor="@color/item_good_text"
-            android:textSize="20dp"/>
-        <TextView
-            android:id="@+id/boutique_text2"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:text="2"
-            android:gravity="center"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:textColor="@color/item_good_text"
-            android:textSize="20dp"/>
-        <TextView
-            android:id="@+id/boutique_text3"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:text="3"
-            android:gravity="center"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:textColor="@color/item_good_text"
-            android:textSize="20dp"/>
-    </LinearLayout>
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@id/tv_good1_name"
 
-</LinearLayout>
+        />
+
+</RelativeLayout>

@@ -17,6 +17,7 @@ import cn.ucai.fulicenter.D;
 import cn.ucai.fulicenter.I;
 import cn.ucai.fulicenter.R;
 import cn.ucai.fulicenter.bean.AlbumBean;
+import cn.ucai.fulicenter.bean.AlbumsBean;
 import cn.ucai.fulicenter.bean.GoodDetailsBean;
 import cn.ucai.fulicenter.bean.NewGoodBean;
 import cn.ucai.fulicenter.data.ApiParams;
@@ -134,7 +135,7 @@ public class GoodDetailActivity extends BaseActivity {
     }
 
     private void updateColor(int i) {
-        AlbumBean[] album = mGoodDetails.getProperties()[i].getAlbumBean();
+        AlbumsBean[] album = mGoodDetails.getProperties()[i].getAlbums();
         String[] albumBean = new String[album.length];
         for(int j=0;j<albumBean.length;j++){
             albumBean[j]=album[j].getImgUrl();

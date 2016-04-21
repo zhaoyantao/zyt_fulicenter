@@ -1,5 +1,6 @@
 package cn.ucai.fulicenter.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -14,31 +15,34 @@ import com.android.volley.Response;
 import com.android.volley.toolbox.NetworkImageView;
 
 import cn.ucai.fulicenter.D;
+import cn.ucai.fulicenter.FuLiCenterApplication;
 import cn.ucai.fulicenter.I;
 import cn.ucai.fulicenter.R;
-import cn.ucai.fulicenter.bean.AlbumBean;
+import cn.ucai.fulicenter.bean.AlbumsBean;
 import cn.ucai.fulicenter.bean.GoodDetailsBean;
+import cn.ucai.fulicenter.bean.MessageBean;
 import cn.ucai.fulicenter.bean.NewGoodBean;
+import cn.ucai.fulicenter.bean.UserBean;
 import cn.ucai.fulicenter.data.ApiParams;
 import cn.ucai.fulicenter.data.GsonRequest;
 import cn.ucai.fulicenter.utils.ImageUtils;
 import cn.ucai.fulicenter.utils.Utils;
-import cn.ucai.fulicenter.utils.DisplayUtils;
+import cn.ucai.fulicenter.view.DisplayUtils;
 import cn.ucai.fulicenter.view.FlowIndicator;
 import cn.ucai.fulicenter.view.SlideAutoLoopView;
 
-public class GoodDetailsActivity extends BaseActivity {
+/**
+ * Created by ucai on 2016/4/18.
+ */
+public class GoodDetailsActivity extends BaseActivity{
     GoodDetailsActivity mContext;
     GoodDetailsBean mGoodDetails;
     int mGoodsId;
-    /** 用于收藏、支付的商品信息实体*/
     NewGoodBean mGood;
-    /** 封装了显示商品信息的view*/
 //    ViewHolder mHolder;
 
     SlideAutoLoopView mSlideAutoLoopView;
     FlowIndicator mFlowIndicator;
-    /** 显示颜色的容器布局*/
     LinearLayout mLayoutColors;
     ImageView mivCollect;
     ImageView mivAddCart;
@@ -51,16 +55,141 @@ public class GoodDetailsActivity extends BaseActivity {
     TextView tvCurrencyPrice;
     WebView wvGoodBrief;
 
-    /** 当前的颜色值*/
     int mCurrentColor;
+
+    boolean isCollect;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_good_details);
+        setContentView(R.layout.good_details);
         mContext=this;
         initView();
+        getIsCollect();
         initData();
+        setListener();
+    }
+
+    private void setListener() {
+        setOnClickListener();
+    }
+
+    private void setOnClickListener() {
+        mivCollect.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.e("abc","进入点击事件了");
+                UserBean user = FuLiCenterApplication.getInstance().getUser();
+                if(isCollect){
+                    deleteCollect();
+                    return;
+                }else{
+                    Log.e("abc","进入一次判断了");
+                    if(user==null){
+                        startActivity(new Intent(GoodDetailsActivity.this,LoginActivity.class));
+                    }else{
+                        Log.e("abc","进入二次判断了");
+                        addCollect(user);
+                    }
+                }
+            }
+        });
+    }
+
+
+
+    private void addCollect(UserBean user){
+        Log.e("abc","进入添加方法了");
+        try {
+            String path = new ApiParams().with(I.Collect.ADD_TIME,mGoodDetails.getAddTime()+"")
+                    .with(I.Collect.GOODS_IMG, mGoodDetails.getGoodsImg())
+                    .with(I.Collect.GOODS_THUMB, mGoodDetails.getGoodsThumb())
+                    .with(I.Collect.GOODS_ENGLISH_NAME, tvGoodEngishName.getText().toString())
+                    .with(I.Collect.GOODS_NAME, tvGoodName.getText().toString())
+                    .with(I.Collect.GOODS_ID, mGoodsId+"")
+                    .with(I.User.USER_NAME, user.getUserName())
+                    .getRequestUrl(I.REQUEST_ADD_COLLECT);
+            Log.e("abc","add:"+path.toString());
+            executeRequest(new GsonRequest<MessageBean>(path,MessageBean.class,
+                    responseAddCollectListener(),errorListener()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private Response.Listener<MessageBean> responseAddCollectListener() {
+        return new Response.Listener<MessageBean>() {
+            @Override
+            public void onResponse(MessageBean messageBean) {
+                if (messageBean!=null){
+                    if(messageBean.isSuccess()){
+                        mivCollect.setImageResource(R.drawable.bg_collect_out);
+                        isCollect = true;
+                    }
+                }
+            }
+        };
+    }
+
+    private void deleteCollect(){
+        String name = FuLiCenterApplication.getInstance().getUserName();
+        try {
+            String path = new ApiParams().with(I.CategoryGood.GOODS_ID,mGoodsId+"")
+                    .with(I.User.USER_NAME, name)
+                    .getRequestUrl(I.REQUEST_DELETE_COLLECT);
+            Log.e("abc","delete:"+path.toString());
+            executeRequest(new GsonRequest<MessageBean>(path,MessageBean.class,
+                    responseDeleteCollectListener(),errorListener()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private Response.Listener<MessageBean> responseDeleteCollectListener() {
+        return new Response.Listener<MessageBean>(){
+
+            @Override
+            public void onResponse(MessageBean messageBean) {
+                if (messageBean!=null){
+                    if(messageBean.isSuccess()){
+                        mivCollect.setImageResource(R.drawable.bg_collect_in);
+                        isCollect = false;
+                    }
+                }
+            }
+        };
+    }
+
+    private void getIsCollect() {
+        String name = FuLiCenterApplication.getInstance().getUserName();
+        mivCollect.setImageResource(R.drawable.bg_collect_in);
+        isCollect =false;
+        if(name!=null) {
+            try {
+                String path = new ApiParams()
+                        .with(I.CategoryGood.GOODS_ID, mGoodsId + "")
+                        .with(I.User.USER_NAME, name)
+                        .getRequestUrl(I.REQUEST_IS_COLLECT);
+                Log.e("abc","findis:"+path.toString());
+                executeRequest(new GsonRequest<MessageBean>(path,MessageBean.class,responseDownLoadCollectListener(),errorListener()));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private Response.Listener<MessageBean> responseDownLoadCollectListener() {
+        return new Response.Listener<MessageBean>() {
+            @Override
+            public void onResponse(MessageBean messageBean) {
+                if (messageBean!=null){
+                    if(messageBean.isSuccess()){
+                        mivCollect.setImageResource(R.drawable.bg_collect_out);
+                        isCollect = true;
+                    }
+                }
+            }
+        };
     }
 
 
@@ -82,7 +211,7 @@ public class GoodDetailsActivity extends BaseActivity {
             public void onResponse(GoodDetailsBean goodDetailsBean) {
                 if(goodDetailsBean!=null){
                     mGoodDetails = goodDetailsBean;
-                    DisplayUtils.initBackWithTitle(mContext,getResources().getString(R.string.title_good_details));
+//                    DisplayUtils.initBackwithTitle(mContext,"商品详情");
                     tvCurrencyPrice.setText(mGoodDetails.getCurrencyPrice());
                     tvGoodEngishName.setText(mGoodDetails.getGoodsEnglishName());
                     tvGoodName.setText(mGoodDetails.getGoodsName());
@@ -108,7 +237,7 @@ public class GoodDetailsActivity extends BaseActivity {
             if(colorImg.isEmpty()){
                 continue;
             }
-            ImageUtils.setNewGoodThumb(colorImg,ivColor);
+            ImageUtils.setGoodDetailThumb(colorImg,ivColor);
             mLayoutColors.addView(layout);
             layout.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -123,10 +252,7 @@ public class GoodDetailsActivity extends BaseActivity {
      * @param i
      */
     private void updateColor(int i) {
-        AlbumBean[] albums = mGoodDetails.getProperties()[i].getAlbumBean();
-        if(albums==null){
-            return;
-        }
+        AlbumsBean[] albums = mGoodDetails.getProperties()[i].getAlbums();
         String[] albumImgUrl=new String[albums.length];
         for(int j=0;j<albumImgUrl.length;j++){
             albumImgUrl[j]=albums[j].getImgUrl();
@@ -135,21 +261,23 @@ public class GoodDetailsActivity extends BaseActivity {
     }
 
     private void initView() {
-        mivCollect=getViewById(R.id.ivCollect);
-        mivAddCart=getViewById(R.id.ivAddCart);
-        mivShare = getViewById(R.id.ivShare);
-        mtvCartCount=getViewById(R.id.tvCartCount);
+        mivCollect= (ImageView) findViewById(R.id.ivCollect);
+        mivAddCart=(ImageView) findViewById(R.id.ivAddCart);
+        mivShare = (ImageView) findViewById(R.id.ivShare);
+        mtvCartCount=(TextView) findViewById(R.id.tvCartCount);
 
-        mSlideAutoLoopView=getViewById(R.id.salv);
-        mFlowIndicator=getViewById(R.id.indicator);
-        mLayoutColors=getViewById(R.id.layoutColorSelector);
-        tvCurrencyPrice=getViewById(R.id.tvCurrencyPrice);
-        tvGoodEngishName=getViewById(R.id.tvGoodEnglishName);
-        tvGoodName=getViewById(R.id.tvGoodName);
-        tvShopPrice=getViewById(R.id.tvShopPrice);
-        wvGoodBrief=getViewById(R.id.wvGoodBrief);
+        mSlideAutoLoopView= (SlideAutoLoopView) findViewById(R.id.salv);
+        mFlowIndicator= (FlowIndicator) findViewById(R.id.indicator);
+        mLayoutColors= (LinearLayout) findViewById(R.id.layoutColorSelector);
+        tvCurrencyPrice= (TextView) findViewById(R.id.tvCurrencyPrice);
+        tvGoodEngishName=(TextView) findViewById(R.id.tvGoodEnglishName);
+        tvGoodName=(TextView) findViewById(R.id.tvGoodName);
+        tvShopPrice=(TextView) findViewById(R.id.tvShopPrice);
+        wvGoodBrief= (WebView) findViewById(R.id.wvGoodBrief);
         WebSettings settings = wvGoodBrief.getSettings();
         settings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
         settings.setBuiltInZoomControls(true);
     }
+
+
 }

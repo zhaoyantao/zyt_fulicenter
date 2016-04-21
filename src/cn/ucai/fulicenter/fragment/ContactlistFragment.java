@@ -23,6 +23,7 @@ import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
@@ -39,6 +40,7 @@ import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -51,19 +53,25 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import cn.ucai.fulicenter.Constant;
 import cn.ucai.fulicenter.DemoHXSDKHelper;
-import cn.ucai.fulicenter.FuLiCenterApplication;
 import cn.ucai.fulicenter.I;
 import cn.ucai.fulicenter.R;
+import cn.ucai.fulicenter.FuLiCenterApplication;
 import cn.ucai.fulicenter.activity.AddContactActivity;
 import cn.ucai.fulicenter.activity.ChatActivity;
 import cn.ucai.fulicenter.activity.MainActivity;
 import cn.ucai.fulicenter.activity.NewFriendsMsgActivity;
+import cn.ucai.fulicenter.activity.PublicChatRoomsActivity;
+import cn.ucai.fulicenter.activity.RobotsActivity;
 import cn.ucai.fulicenter.adapter.ContactAdapter;
 import cn.ucai.fulicenter.applib.controller.HXSDKHelper;
+import cn.ucai.fulicenter.applib.controller.HXSDKHelper.HXSyncListener;
 import cn.ucai.fulicenter.bean.ContactBean;
 import cn.ucai.fulicenter.bean.UserBean;
 import cn.ucai.fulicenter.data.ApiParams;
@@ -78,7 +86,7 @@ import cn.ucai.fulicenter.widget.Sidebar;
  * 联系人列表页
  * 
  */
-public class ContactlistFragment extends Fragment {
+public class ContactlistFragment extends Fragment{
 	public static final String TAG = "ContactlistFragment";
 	private ContactAdapter adapter;
 	private List<User> contactList;
@@ -96,13 +104,12 @@ public class ContactlistFragment extends Fragment {
 	Handler handler = new Handler();
     private UserBean toBeProcessUser;
     private String toBeProcessUsername;
+   //广播接受者
+	ContactChangeReciver mContactChangeReciver;
+	private ArrayList<UserBean> mcontactList;
+     MainActivity mContext;
 
-    private ArrayList<UserBean> mContactList = new ArrayList<UserBean>();
-    ContactListChangedReceiver mReceiver;
-
-    MainActivity mContext;
-
-	class HXContactSyncListener implements HXSDKHelper.HXSyncListener {
+	class HXContactSyncListener implements HXSyncListener {
 		@Override
 		public void onSyncSucess(final boolean success) {
 			EMLog.d(TAG, "on contact list sync success:" + success);
@@ -128,7 +135,7 @@ public class ContactlistFragment extends Fragment {
 		}
 	}
 	
-	class HXBlackListSyncListener implements HXSDKHelper.HXSyncListener {
+	class HXBlackListSyncListener implements HXSyncListener{
 
         @Override
         public void onSyncSucess(boolean success) {
@@ -145,7 +152,7 @@ public class ContactlistFragment extends Fragment {
 	    
 	};
 	
-	class HXContactInfoSyncListener implements HXSDKHelper.HXSyncListener{
+	class HXContactInfoSyncListener implements HXSyncListener{
 
 		@Override
 		public void onSyncSucess(final boolean success) {
@@ -166,8 +173,10 @@ public class ContactlistFragment extends Fragment {
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
 		return inflater.inflate(R.layout.fragment_contact_list, container, false);
 	}
+
 
     @Override
     public void onAttach(Context context) {
@@ -181,6 +190,7 @@ public class ContactlistFragment extends Fragment {
 		//防止被T后，没点确定按钮然后按了home键，长期在后台又进app导致的crash
 		if(savedInstanceState != null && savedInstanceState.getBoolean("isConflict", false))
 		    return;
+		RegisterContactChangeReciver();
 		inputMethodManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
 		listView = (ListView) getView().findViewById(R.id.list);
 		sidebar = (Sidebar) getView().findViewById(R.id.sidebar);
@@ -189,10 +199,10 @@ public class ContactlistFragment extends Fragment {
 		//黑名单列表
 		blackList = EMContactManager.getInstance().getBlackListUsernames();
 		contactList = new ArrayList<User>();
-		// 获取设置contactlist
+        mcontactList = new ArrayList<>();
+        // 获取设置contactlist
 //		getContactList();
         initContactList();
-		
 		//搜索框
 		query = (EditText) getView().findViewById(R.id.query);
 		query.setHint(R.string.search);
@@ -204,7 +214,6 @@ public class ContactlistFragment extends Fragment {
 					clearSearch.setVisibility(View.VISIBLE);
 				} else {
 					clearSearch.setVisibility(View.INVISIBLE);
-					
 				}
 			}
 
@@ -223,10 +232,56 @@ public class ContactlistFragment extends Fragment {
 		});
 		
 		// 设置adapter
-		adapter = new ContactAdapter(getActivity(), R.layout.row_contact, mContactList);
+		adapter = new ContactAdapter(getActivity(), R.layout.row_contact, mcontactList);
 		listView.setAdapter(adapter);
-        setListener();
+		listView.setOnItemClickListener(new OnItemClickListener() {
 
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+				String username = adapter.getItem(position).getUserName();
+				if (Constant.NEW_FRIENDS_USERNAME.equals(username)) {
+					// 进入申请与通知页面
+					User user = ((DemoHXSDKHelper)HXSDKHelper.getInstance()).getContactList().get(Constant.NEW_FRIENDS_USERNAME);
+					user.setUnreadMsgCount(0);
+					startActivity(new Intent(getActivity(), NewFriendsMsgActivity.class));
+				} else if (Constant.GROUP_USERNAME.equals(username)) {
+					// 进入群聊列表页面
+//					startActivity(new Intent(getActivity(), GroupsActivity.class));
+				} else if(Constant.CHAT_ROOM.equals(username)){
+					//进入聊天室列表页面
+				    startActivity(new Intent(getActivity(), PublicChatRoomsActivity.class));
+				}else if(Constant.CHAT_ROBOT.equals(username)){
+					//进入Robot列表页面
+					startActivity(new Intent(getActivity(), RobotsActivity.class));
+				}else {
+					// demo中直接进入聊天页面，实际一般是进入用户详情页
+					startActivity(new Intent(getActivity(), ChatActivity.class).putExtra("userId", adapter.getItem(position).getUserName()));
+				}
+			}
+		});
+		listView.setOnTouchListener(new OnTouchListener() {
+
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				// 隐藏软键盘
+				if (getActivity().getWindow().getAttributes().softInputMode != WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN) {
+					if (getActivity().getCurrentFocus() != null)
+						inputMethodManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(),
+								InputMethodManager.HIDE_NOT_ALWAYS);
+				}
+				return false;
+			}
+		});
+
+		ImageView addContactView = (ImageView) getView().findViewById(R.id.iv_new_contact);
+		// 进入添加好友页
+		addContactView.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				startActivity(new Intent(getActivity(), AddContactActivity.class));
+			}
+		});
 		registerForContextMenu(listView);
 		
 		progressBar = (View) getView().findViewById(R.id.progress_bar);
@@ -245,62 +300,9 @@ public class ContactlistFragment extends Fragment {
 		} else {
 			progressBar.setVisibility(View.GONE);
 		}
-        registerContactListChangedReceiver();
 	}
 
-    private void setListener() {
-        setContactItemClickListener();
-        setContactListTouchListener();
-        setAddContactListener();
-    }
-
-    private void setAddContactListener() {
-        // 进入添加好友页
-        getView().findViewById(R.id.iv_new_contact).setOnClickListener(new OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(getActivity(), AddContactActivity.class));
-            }
-        });
-    }
-
-    private void setContactListTouchListener() {
-        listView.setOnTouchListener(new OnTouchListener() {
-
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                // 隐藏软键盘
-                if (getActivity().getWindow().getAttributes().softInputMode != WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN) {
-                    if (getActivity().getCurrentFocus() != null)
-                        inputMethodManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(),
-                                InputMethodManager.HIDE_NOT_ALWAYS);
-                }
-                return false;
-            }
-        });
-    }
-
-    private void setContactItemClickListener() {
-        listView.setOnItemClickListener(new OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String username = adapter.getItem(position).getUserName();
-                if (Constant.NEW_FRIENDS_USERNAME.equals(username)) {
-                    // 进入申请与通知页面
-                    User user = ((DemoHXSDKHelper)HXSDKHelper.getInstance()).getContactList().get(Constant.NEW_FRIENDS_USERNAME);
-                    user.setUnreadMsgCount(0);
-                    startActivity(new Intent(getActivity(), NewFriendsMsgActivity.class));
-                } else {
-                    // demo中直接进入聊天页面，实际一般是进入用户详情页
-                    startActivity(new Intent(getActivity(), ChatActivity.class).putExtra("userId", adapter.getItem(position).getUserName()));
-                }
-            }
-        });
-    }
-
-    @Override
+	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
 		super.onCreateContextMenu(menu, v, menuInfo);
 		if (((AdapterContextMenuInfo) menuInfo).position > 1) {
@@ -350,7 +352,7 @@ public class ContactlistFragment extends Fragment {
 	/**
 	 * 删除联系人
 	 * 
-	 * @param tobeDeleteUser
+	 * @param
 	 */
 	public void deleteContact(final UserBean tobeDeleteUser) {
 		String st1 = getResources().getString(R.string.deleting);
@@ -362,37 +364,32 @@ public class ContactlistFragment extends Fragment {
 		new Thread(new Runnable() {
 			public void run() {
 				try {
-                    //删除应用服务器的好友关系
-                    HashMap<Integer, ContactBean> contacts = FuLiCenterApplication.getInstance().getContacts();
                     ArrayList<UserBean> contactList = FuLiCenterApplication.getInstance().getContactList();
                     HashMap<String, UserBean> userList = FuLiCenterApplication.getInstance().getUserList();
-                    ArrayList<ContactBean> deleteContacts = new ArrayList<ContactBean>();
-                    ArrayList<UserBean> deleteContactList = new ArrayList<UserBean>();
-                    //删除内存中好友，删除的好友存放在deleteContactList和deleteContacts集合中
-                    for(UserBean contactUser : contactList){
-                        if(tobeDeleteUser.equals(contactUser)){
-                            ContactBean contact = contacts.remove(contactUser.getId());
-                            deleteContacts.add(contact);
-                            deleteContactList.add(contactUser);
-                            userList.remove(contactUser.getUserName());
+                    HashMap<Integer, ContactBean> contact = FuLiCenterApplication.getInstance().getContacts();
+                    ArrayList<ContactBean> deleteContact = new ArrayList<ContactBean>();
+                    ArrayList<UserBean> deleteUser = new ArrayList<UserBean>();
+                    for (UserBean userBean : contactList) {
+                        if (tobeDeleteUser.equals(userBean)) {
+                            ContactBean remove = contact.remove(userBean.getId());
+                            deleteContact.add(remove);
+                            deleteUser.add(userBean);
+                            userList.remove(userBean.getUserName());
                         }
                     }
-                    if(deleteContacts.size()>0){
-                        contactList.removeAll(deleteContactList);//删除内存中好友
-                        // 删除应用服务器的联系人记录
-                        try {
-                            for(ContactBean contact : deleteContacts) {
-                                String path = new ApiParams()
-                                        .with(I.Contact.MYUID, contact.getMyuid() + "")
-                                        .with(I.Contact.CUID, contact.getCuid() + "")
-										.getRequestUrl(I.REQUEST_DELETE_CONTACT);
-                                mContext.executeRequest(new GsonRequest<Boolean>(path, Boolean.class,
-                                        responseDeleteContactListener(), mContext.errorListener()));
-                            }
-                        }catch (Exception e){
-                            e.printStackTrace();
+                    if (deleteContact.size() > 0) {
+                        contactList.removeAll(deleteUser);
+                        for (ContactBean removeContact : deleteContact) {
+                            String path = new ApiParams()
+                                    .with(I.KEY_REQUEST, I.REQUEST_DELETE_CONTACT)
+                                    .with(I.Contact.MYUID, removeContact.getMyuid()+"")
+                                    .with(I.Contact.CUID, removeContact.getCuid()+"")
+                                    .getUrl(FuLiCenterApplication.SERVER_ROOT);
+                            mContext.executeRequest(new GsonRequest<Boolean>(path,Boolean.class,
+                                    responseDeleteListener(),mContext.errorListener()));
                         }
                     }
+
 					EMContactManager.getInstance().deleteContact(tobeDeleteUser.getUserName());
 					// 删除db和内存中此用户的数据
 					EMUserDao dao = new EMUserDao(getActivity());
@@ -402,8 +399,8 @@ public class ContactlistFragment extends Fragment {
 						public void run() {
 							pd.dismiss();
 							adapter.remove(tobeDeleteUser);
-							adapter.notifyDataSetChanged();
 
+							adapter.notifyDataSetChanged();
 						}
 					});
 				} catch (final Exception e) {
@@ -413,25 +410,23 @@ public class ContactlistFragment extends Fragment {
 							Toast.makeText(getActivity(), st2 + e.getMessage(), Toast.LENGTH_LONG).show();
 						}
 					});
-
 				}
-
 			}
 		}).start();
-
 	}
 
-    private Response.Listener<Boolean> responseDeleteContactListener() {
+    private Response.Listener<Boolean> responseDeleteListener() {
         return new Response.Listener<Boolean>() {
             @Override
-            public void onResponse(Boolean isSuccess) {
-                if(isSuccess){
-                    Intent intent = new Intent("update_contacts").setAction("update_contact_list");
+            public void onResponse(Boolean aBoolean) {
+                if (aBoolean) {
+                    Intent intent=new Intent("update_contactsList").setAction("update_contacts");
                     mContext.sendBroadcast(intent);
                 }
             }
         };
     }
+
 
     /**
 	 * 把user移入到黑名单
@@ -477,13 +472,51 @@ public class ContactlistFragment extends Fragment {
 			getActivity().runOnUiThread(new Runnable() {
 				public void run() {
 //					getContactList();
-                    initContactList();
+                   Log.i("main","runOnUiThread");
+					initContactList();
 					adapter.notifyDataSetChanged();
 				}
 			});
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	private void initContactList() {
+		Log.i("main", "initContactListmcontactList:" + mcontactList.size());
+//		mcontactList = FuLiCenterApplication.getInstance().getContactList();
+        ArrayList<UserBean> userList = FuLiCenterApplication.getInstance().getContactList();
+        mcontactList.clear();
+        Log.i("main", "initContactListuserList:" + userList.size());
+        mcontactList.addAll(userList);
+		Log.i("main", "initContactListmcontactList:" + mcontactList.size());
+		//添加群聊
+		UserBean groupUser = new UserBean();
+		String strGroup = getActivity().getString(R.string.group_id);
+		groupUser.setUserName(Constant.GROUP_USERNAME);
+		groupUser.setNick(strGroup);
+		groupUser.setHeader("");
+		if (mcontactList.indexOf(groupUser) == -1) {
+			mcontactList.add(0, groupUser);
+		}
+		//添加user申请与通知
+		UserBean newFriends = new UserBean();
+		newFriends.setUserName(Constant.NEW_FRIENDS_USERNAME);
+		String strChat = getActivity().getString(R.string.Application_and_notify);
+		newFriends.setNick(strChat);
+		if (mcontactList.indexOf(newFriends) == -1) {
+			mcontactList.add(0, newFriends);
+		}
+		for (UserBean user : mcontactList) {
+			UserUtils.setUserBeanHearder(user.getUserName(), user);
+		}
+		Collections.sort(mcontactList, new Comparator<UserBean>() {
+
+				@Override
+				public int compare(UserBean lhs, UserBean rhs) {
+					return lhs.getHeader().compareTo(rhs.getHeader());
+				}
+	});
 	}
 
 	@Override
@@ -500,9 +533,6 @@ public class ContactlistFragment extends Fragment {
 		if(contactInfoSyncListener != null){
 			((DemoHXSDKHelper)HXSDKHelper.getInstance()).getUserProfileManager().removeSyncContactInfoListener(contactInfoSyncListener);
 		}
-        if(mReceiver != null){
-            getActivity().unregisterReceiver(mReceiver);
-        }
 		super.onDestroy();
 	}
 	
@@ -516,79 +546,46 @@ public class ContactlistFragment extends Fragment {
 		}
 	}
 
-//	/**
-//	 * 获取联系人列表，并过滤掉黑名单和排序
-//	 */
-//	private void getContactList() {
-//		contactList.clear();
-//		//获取本地好友列表
-//		Map<String, User> users = ((DemoHXSDKHelper)HXSDKHelper.getInstance()).getContactList();
-//		Iterator<Entry<String, User>> iterator = users.entrySet().iterator();
-//		while (iterator.hasNext()) {
-//			Entry<String, User> entry = iterator.next();
-//			if (!entry.getKey().equals(Constant.NEW_FRIENDS_USERNAME)
-//			        && !entry.getKey().equals(Constant.GROUP_USERNAME)
-//			        && !entry.getKey().equals(Constant.CHAT_ROOM)
-//					&& !entry.getKey().equals(Constant.CHAT_ROBOT)
-//					&& !blackList.contains(entry.getKey()))
-//				contactList.add(entry.getValue());
-//		}
-//		// 排序
-//		Collections.sort(contactList, new Comparator<User>() {
-//
-//			@Override
-//			public int compare(User lhs, User rhs) {
-//				return lhs.getUsername().compareTo(rhs.getUsername());
-//			}
-//		});
-//
+	/**
+	 * 获取联系人列表，并过滤掉黑名单和排序
+	 */
+	private void getContactList() {
+		contactList.clear();
+		//获取本地好友列表
+		Map<String, User> users = ((DemoHXSDKHelper)HXSDKHelper.getInstance()).getContactList();
+		Iterator<Entry<String, User>> iterator = users.entrySet().iterator();
+		while (iterator.hasNext()) {
+			Entry<String, User> entry = iterator.next();
+			if (!entry.getKey().equals(Constant.NEW_FRIENDS_USERNAME)
+			        && !entry.getKey().equals(Constant.GROUP_USERNAME)
+			        && !entry.getKey().equals(Constant.CHAT_ROOM)
+					&& !entry.getKey().equals(Constant.CHAT_ROBOT)
+					&& !blackList.contains(entry.getKey()))
+				contactList.add(entry.getValue());
+		}
+		// 排序
+		Collections.sort(contactList, new Comparator<User>() {
+
+			@Override
+			public int compare(User lhs, User rhs) {
+				return lhs.getUsername().compareTo(rhs.getUsername());
+			}
+		});
+
 //		if(users.get(Constant.CHAT_ROBOT)!=null){
 //			contactList.add(0, users.get(Constant.CHAT_ROBOT));
 //		}
 //		// 加入"群聊"和"聊天室"
 //        if(users.get(Constant.CHAT_ROOM) != null)
 //            contactList.add(0, users.get(Constant.CHAT_ROOM));
-//        if(users.get(Constant.GROUP_USERNAME) != null)
-//            contactList.add(0, users.get(Constant.GROUP_USERNAME));
-//
-//		// 把"申请与通知"添加到首位
-//		if(users.get(Constant.NEW_FRIENDS_USERNAME) != null)
-//		    contactList.add(0, users.get(Constant.NEW_FRIENDS_USERNAME));
-//
-//	}
-
-    private void initContactList(){
-        ArrayList<UserBean> contactlist = FuLiCenterApplication.getInstance().getContactList();
-        mContactList.clear();
-        mContactList.addAll(contactlist);
-        // 添加"群聊"
-        UserBean groupUser = new UserBean();
-        String strGroup = getActivity().getString(R.string.group_chat);
-        groupUser.setUserName(Constant.GROUP_USERNAME);
-        groupUser.setNick(strGroup);
-        groupUser.setHeader("");
-        if(mContactList.indexOf(groupUser)==-1){
-            mContactList.add(0, groupUser);
-        }
-        // 添加user"申请与通知"
-        UserBean newFriends = new UserBean();
-        newFriends.setUserName(Constant.NEW_FRIENDS_USERNAME);
-        String strChat = getActivity().getString(R.string.Application_and_notify);
-        newFriends.setNick(strChat);
-		newFriends.setHeader("");
-        if(mContactList.indexOf(newFriends)==-1){
-            mContactList.add(0, newFriends);
-        }
-        for(UserBean user : mContactList){
-            UserUtils.setUserBeanHearder(user.getUserName(),user);
-        }
-        Collections.sort(mContactList, new Comparator<UserBean>() {
-            @Override
-            public int compare(UserBean lhs, UserBean rhs) {
-                return lhs.getHeader().compareTo(rhs.getHeader());
-            }
-        });
-    }
+        if(users.get(Constant.GROUP_USERNAME) != null)
+            contactList.add(0, users.get(Constant.GROUP_USERNAME));
+        
+		// 把"申请与通知"添加到首位
+		if(users.get(Constant.NEW_FRIENDS_USERNAME) != null)
+		    contactList.add(0, users.get(Constant.NEW_FRIENDS_USERNAME));
+		
+	}
 	
 	void hideSoftKeyboard() {
         if (getActivity().getWindow().getAttributes().softInputMode != WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN) {
@@ -606,22 +603,41 @@ public class ContactlistFragment extends Fragment {
 	    }else if(((MainActivity)getActivity()).getCurrentAccountRemoved()){
 	    	outState.putBoolean(Constant.ACCOUNT_REMOVED, true);
 	    }
-	    
 	}
 
-
-    class ContactListChangedReceiver extends BroadcastReceiver{
+	class ContactChangeReciver extends BroadcastReceiver {
 
 		@Override
 		public void onReceive(Context context, Intent intent) {
-            refresh();
+            Log.i("main", "ContactChangeReciver");
+//			mcontactList.clear();
+//			ArrayList<UserBean> contactsList= FuLiCenterApplication.getInstance().getContactList();
+//			mcontactList.addAll(contactsList);
+//			for (UserBean user:contactsList) {
+//				UserUtils.setUserBeanHearder(user.getUserName(), user);
+//			}
+//			//排序
+//			Collections.sort(mcontactList, new Comparator<UserBean>() {
+//
+//				@Override
+//				public int compare(UserBean lhs, UserBean rhs) {
+//					return lhs.getNick().compareTo(rhs.getNick());
+//				}
+//			});
+			refresh();
 		}
 	}
+	private void RegisterContactChangeReciver() {
+		mContactChangeReciver = new ContactChangeReciver();
+		IntentFilter filter = new IntentFilter("update_contactsList");
+		getActivity().registerReceiver(mContactChangeReciver, filter);
+	}
 
-    private void registerContactListChangedReceiver(){
-        mReceiver = new ContactListChangedReceiver();
-        IntentFilter filter = new IntentFilter("update_contact_list");
-        getActivity().registerReceiver(mReceiver,filter);
-    }
-
+	@Override
+	public void onDestroyView() {
+		super.onDestroyView();
+		if (mContactChangeReciver != null) {
+			getActivity().unregisterReceiver(mContactChangeReciver);
+		}
+	}
 }

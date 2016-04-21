@@ -3,7 +3,6 @@ package cn.ucai.fulicenter.adapter;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,7 +18,6 @@ import java.util.Comparator;
 import cn.ucai.fulicenter.D;
 import cn.ucai.fulicenter.I;
 import cn.ucai.fulicenter.R;
-import cn.ucai.fulicenter.activity.GoodDetailActivity;
 import cn.ucai.fulicenter.activity.GoodDetailsActivity;
 import cn.ucai.fulicenter.bean.NewGoodBean;
 import cn.ucai.fulicenter.utils.ImageUtils;
@@ -40,6 +38,11 @@ public class GoodAdapter extends RecyclerView.Adapter<ViewHolder> {
     private String footerText;
     private boolean isMore;
     int sortBy;
+
+    public GoodAdapter(Context mContext, ArrayList<NewGoodBean> mGoodList) {
+        this.mContext = mContext;
+        this.mGoodList = mGoodList;
+    }
 
     public void setSortBy(int sortBy) {
         this.sortBy = sortBy;
@@ -68,7 +71,6 @@ public class GoodAdapter extends RecyclerView.Adapter<ViewHolder> {
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        Log.e("main","onCreateViewHolder,viewType="+viewType);
         LayoutInflater inflater = LayoutInflater.from(mContext);
         ViewHolder holder = null;
         switch (viewType){
@@ -84,21 +86,20 @@ public class GoodAdapter extends RecyclerView.Adapter<ViewHolder> {
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        Log.e("main","onCreateViewHolder,holder="+holder+",position="+position);
         if(holder instanceof FooterViewHolder){
             footerHolder = (FooterViewHolder) holder;
             footerHolder.tvFooter.setText(footerText);
             footerHolder.tvFooter.setVisibility(View.VISIBLE);
         }
-//        if(position == mGoodList.size()){
-//            return;
-//        }
+
         if(holder instanceof GoodItemViewHolder){
             goodHolder = (GoodItemViewHolder) holder;
             final NewGoodBean good = mGoodList.get(position);
             goodHolder.tvGoodName.setText(good.getGoodsName());
             goodHolder.tvGoodPrice.setText(good.getCurrencyPrice());
             ImageUtils.setNewGoodThumb(good.getGoodsThumb(),goodHolder.nivThumb);
+
+
 
             goodHolder.layoutGood.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -113,13 +114,11 @@ public class GoodAdapter extends RecyclerView.Adapter<ViewHolder> {
 
     @Override
     public int getItemCount() {
-        Log.e("main","getItemCount,mGoodList="+mGoodList.size());
         return mGoodList==null?1:mGoodList.size()+1;
     }
 
     @Override
     public int getItemViewType(int position) {
-        Log.e("main","getItemViewType,position="+position);
         if(position==getItemCount()-1){
             return I.TYPE_FOOTER;
         }else{
@@ -128,13 +127,11 @@ public class GoodAdapter extends RecyclerView.Adapter<ViewHolder> {
     }
 
     public void initItems(ArrayList<NewGoodBean> list) {
-        Log.e("main","initItems,mGoodList="+mGoodList.size());
         if(mGoodList!=null && !mGoodList.isEmpty()){
             mGoodList.clear();
         }
         mGoodList.addAll(list);
         sort(sortBy);
-        Log.e("main","initItems,mGoodList="+mGoodList.size());
         notifyDataSetChanged();
     }
 
@@ -145,6 +142,7 @@ public class GoodAdapter extends RecyclerView.Adapter<ViewHolder> {
     }
 
     private void sort(final int sortBy){
+
         Collections.sort(mGoodList, new Comparator<NewGoodBean>() {
             @Override
             public int compare(NewGoodBean g1, NewGoodBean g2) {

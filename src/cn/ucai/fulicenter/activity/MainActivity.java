@@ -67,6 +67,7 @@ import cn.ucai.fulicenter.data.GsonRequest;
 import cn.ucai.fulicenter.db.EMUserDao;
 import cn.ucai.fulicenter.db.InviteMessgeDao;
 import cn.ucai.fulicenter.domain.InviteMessage;
+import cn.ucai.fulicenter.domain.InviteMessage.InviteMesageStatus;
 import cn.ucai.fulicenter.domain.User;
 import cn.ucai.fulicenter.fragment.ChatAllHistoryFragment;
 import cn.ucai.fulicenter.fragment.ContactlistFragment;
@@ -76,7 +77,6 @@ import cn.ucai.fulicenter.utils.Utils;
 public class MainActivity extends BaseActivity implements EMEventListener {
 
 	protected static final String TAG = "MainActivity";
-	Context mContext;
 	// 未读消息textview
 	private TextView unreadLabel;
 	// 未读通讯录textview
@@ -98,6 +98,8 @@ public class MainActivity extends BaseActivity implements EMEventListener {
 	
 	private MyConnectionListener connectionListener = null;
 
+	private Context mContext;
+
 	/**
 	 * 检查当前用户是否被删除
 	 */
@@ -108,9 +110,23 @@ public class MainActivity extends BaseActivity implements EMEventListener {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mContext = this;
 		
+//		if (savedInstanceState != null && savedInstanceState.getBoolean(Constant.ACCOUNT_REMOVED, false)) {
+//			// 防止被移除后，没点确定按钮然后按了home键，长期在后台又进app导致的crash
+//			// 三个fragment里加的判断同理
+//		    DemoHXSDKHelper.getInstance().logout(true,null);
+//			finish();
+//			startActivity(new Intent(this, LoginActivity.class));
+//			return;
+//		} else if (savedInstanceState != null && savedInstanceState.getBoolean("isConflict", false)) {
+//			// 防止被T后，没点确定按钮然后按了home键，长期在后台又进app导致的crash
+//			// 三个fragment里加的判断同理
+//			finish();
+//			startActivity(new Intent(this, LoginActivity.class));
+//			return;
+//		}
 		setContentView(R.layout.activity_main);
+		mContext=this;
 		initView();
 
 		// MobclickAgent.setDebugMode( true );
@@ -124,7 +140,7 @@ public class MainActivity extends BaseActivity implements EMEventListener {
 		}
 
 		inviteMessgeDao = new InviteMessgeDao(this);
-		EMUserDao = new EMUserDao(this);
+		userDao = new EMUserDao(this);
 		// 这个fragment只显示好友和群组的聊天记录
 		// chatHistoryFragment = new ChatHistoryFragment();
 		// 显示所有人消息记录的fragment
@@ -139,7 +155,7 @@ public class MainActivity extends BaseActivity implements EMEventListener {
 		
 		init();
 		//异步获取当前用户的昵称和头像
-		((DemoHXSDKHelper) HXSDKHelper.getInstance()).getUserProfileManager().asyncGetCurrentUserInfo();
+		((DemoHXSDKHelper)HXSDKHelper.getInstance()).getUserProfileManager().asyncGetCurrentUserInfo();
 	}
 
 	private void init() {     
@@ -157,6 +173,32 @@ public class MainActivity extends BaseActivity implements EMEventListener {
 	}
 
 
+	
+//	static void asyncFetchGroupsFromServer(){
+//	    HXSDKHelper.getInstance().asyncFetchGroupsFromServer(new EMCallBack(){
+//
+//            @Override
+//            public void onSuccess() {
+//                HXSDKHelper.getInstance().noitifyGroupSyncListeners(true);
+//
+//                if(HXSDKHelper.getInstance().isContactsSyncedWithServer()){
+//                    HXSDKHelper.getInstance().notifyForRecevingEvents();
+//                }
+//            }
+//
+//            @Override
+//            public void onError(int code, String message) {
+//                HXSDKHelper.getInstance().noitifyGroupSyncListeners(false);
+//            }
+//
+//            @Override
+//            public void onProgress(int progress, String status) {
+//
+//            }
+//
+//        });
+//	}
+	
 	static void asyncFetchContactsFromServer(){
 	    HXSDKHelper.getInstance().asyncFetchContactsFromServer(new EMValueCallBack<List<String>>(){
 
@@ -187,7 +229,23 @@ public class MainActivity extends BaseActivity implements EMEventListener {
                 groupUser.setNick(strGroup);
                 groupUser.setHeader("");
                 userlist.put(Constant.GROUP_USERNAME, groupUser);
-
+                
+//                 // 添加"聊天室"
+//                User chatRoomItem = new User();
+//                String strChatRoom = context.getString(R.string.chat_room);
+//                chatRoomItem.setUsername(Constant.CHAT_ROOM);
+//                chatRoomItem.setNick(strChatRoom);
+//                chatRoomItem.setHeader("");
+//                userlist.put(Constant.CHAT_ROOM, chatRoomItem);
+//
+//                // 添加"Robot"
+//        		User robotUser = new User();
+//        		String strRobot = context.getString(R.string.robot_chat);
+//        		robotUser.setUsername(Constant.CHAT_ROBOT);
+//        		robotUser.setNick(strRobot);
+//        		robotUser.setHeader("");
+//        		userlist.put(Constant.CHAT_ROBOT, robotUser);
+        		
                  // 存入内存
                 ((DemoHXSDKHelper)HXSDKHelper.getInstance()).setContactList(userlist);
                  // 存入db
@@ -196,7 +254,11 @@ public class MainActivity extends BaseActivity implements EMEventListener {
                 dao.saveContactList(users);
 
                 HXSDKHelper.getInstance().notifyContactsSyncListener(true);
-
+                
+                if(HXSDKHelper.getInstance().isGroupsSyncedWithServer()){
+                    HXSDKHelper.getInstance().notifyForRecevingEvents();
+                }
+                
                 ((DemoHXSDKHelper)HXSDKHelper.getInstance()).getUserProfileManager().asyncFetchContactInfosFromServer(usernames,new EMValueCallBack<List<User>>() {
 
 					@Override
@@ -219,7 +281,23 @@ public class MainActivity extends BaseActivity implements EMEventListener {
 	    });
 	}
 	
+	static void asyncFetchBlackListFromServer(){
+	    HXSDKHelper.getInstance().asyncFetchBlackListFromServer(new EMValueCallBack<List<String>>(){
 
+            @Override
+            public void onSuccess(List<String> value) {
+                EMContactManager.getInstance().saveBlackList(value);
+                HXSDKHelper.getInstance().notifyBlackListSyncListener(true);
+            }
+
+            @Override
+            public void onError(int error, String errorMsg) {
+                HXSDKHelper.getInstance().notifyBlackListSyncListener(false);
+            }
+	        
+	    });
+	}
+	
 	/**
      * 设置hearder属性，方便通讯中对联系人按header分类显示，以及通过右侧ABCD...字母栏快速定位联系人
      * 
@@ -359,7 +437,6 @@ public class MainActivity extends BaseActivity implements EMEventListener {
 		    EMChatManager.getInstance().removeConnectionListener(connectionListener);
 		}
 		
-
 		try {
             unregisterReceiver(internalDebugReceiver);
         } catch (Exception e) {
@@ -387,7 +464,7 @@ public class MainActivity extends BaseActivity implements EMEventListener {
 			public void run() {
 				int count = getUnreadAddressCountTotal();
 				if (count > 0) {
-//					unreadAddressLable.setText(String.valueOf(count));
+					unreadAddressLable.setText(String.valueOf(count));
 					unreadAddressLable.setVisibility(View.VISIBLE);
 				} else {
 					unreadAddressLable.setVisibility(View.INVISIBLE);
@@ -427,7 +504,7 @@ public class MainActivity extends BaseActivity implements EMEventListener {
 	}
 
 	private InviteMessgeDao inviteMessgeDao;
-	private EMUserDao EMUserDao;
+	private EMUserDao userDao;
 
 	/***
 	 * 好友变化listener
@@ -441,126 +518,77 @@ public class MainActivity extends BaseActivity implements EMEventListener {
 			Map<String, User> localUsers = ((DemoHXSDKHelper)HXSDKHelper.getInstance()).getContactList();
 			ArrayList<UserBean> contactList = FuLiCenterApplication.getInstance().getContactList();
 			Map<String, User> toAddUsers = new HashMap<String, User>();
-			ArrayList<String> toAddUserNames = new ArrayList<String>();
-            boolean isAdd = false;
+			ArrayList<String> otherName = new ArrayList<>();
+			boolean isAdd = false;
+
+
 			for (String username : usernameList) {
 				User user = setUserHead(username);
+				otherName.add(username);
 				// 添加好友时可能会回调added方法两次
 				if (!localUsers.containsKey(username)) {
-					EMUserDao.saveContact(user);
-                    isAdd = true;
-				}
-				UserBean u = new UserBean(username);
-				if (!contactList.contains(u)){
-					toAddUserNames.add(username);
+					userDao.saveContact(user);
+					isAdd = true;
 				}
 				toAddUsers.put(username, user);
 			}
 			localUsers.putAll(toAddUsers);
-			for (String name : toAddUserNames) {
-				try {
-                    if(isAdd) {
-                        String path = new ApiParams()
-                                .with(I.User.USER_NAME, FuLiCenterApplication.getInstance().getUserName())
-                                .with(I.Contact.NAME, name)
-                                .getRequestUrl(I.REQUEST_ADD_CONTACT);
-                        executeRequest(new GsonRequest<ContactBean>(path, ContactBean.class,
-                                responseAddContactListener(name), errorListener()));
-                    }
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
 			// 刷新ui
 			if (currentTabIndex == 1)
 				contactListFragment.refresh();
 
-
-		}
-
-		private Response.Listener<ContactBean> responseAddContactListener(final String name) {
-			return new Response.Listener<ContactBean>() {
-				@Override
-				public void onResponse(ContactBean contact) {
-					if(contact!=null && "ok".equals(contact.getResult())) {
-						//获取好友集合
-						HashMap<Integer, ContactBean> contacts = FuLiCenterApplication.getInstance().getContacts();
-						//若添加成功，则将新好友保存在内存集合
-						contacts.put(contact.getMyuid(), contact);
-						//从服务端下载新好友
-						try {
-							String path = new ApiParams()
-									.with(I.User.USER_NAME, name)
-									.getRequestUrl(I.REQUEST_FIND_USER);
-							executeRequest(new GsonRequest<UserBean>(path, UserBean.class,
-									responseUserBeanListener(), errorListener()));
-						}catch (Exception e){
-							e.printStackTrace();
-						}
-					} else {
-                        Utils.showToast(mContext,R.string.Add_buddy_failed,Toast.LENGTH_SHORT);
-                    }
-				}
-			};
-		}
-
-		private Response.Listener<UserBean> responseUserBeanListener() {
-			return new Response.Listener<UserBean>() {
-				@Override
-				public void onResponse(UserBean userBean) {
-					if(userBean!=null) {
-						ArrayList<UserBean> contactList = FuLiCenterApplication.getInstance().getContactList();
-						HashMap<String, UserBean> userList = FuLiCenterApplication.getInstance().getUserList();
-						contactList.add(userBean);
-						userList.put(userBean.getUserName(),userBean);
-						mContext.sendStickyBroadcast(new Intent("update_contact_list"));
-						Utils.showToast(mContext,R.string.Add_buddy_success,Toast.LENGTH_SHORT);
-					}
-				}
-			};
+			//添加本地数据库好友关系列表数据
+			String userNane = FuLiCenterApplication.getInstance().getUserName();
+			for (String cName : otherName) {
+				setAddContact(userNane, cName);
+			}
 		}
 
 		@Override
 		public void onContactDeleted(final List<String> usernameList) {
+			ArrayList<UserBean> contactList = FuLiCenterApplication.getInstance().getContactList();
+			HashMap<String, UserBean> userList = FuLiCenterApplication.getInstance().getUserList();
+			HashMap<Integer, ContactBean> contact = FuLiCenterApplication.getInstance().getContacts();
+			ArrayList<ContactBean> deleteContact = new ArrayList<ContactBean>();
+			ArrayList<UserBean> deleteUser = new ArrayList<UserBean>();
+
+			for (String username : usernameList) {
+				UserBean contactBean = userList.get("username");
+				ContactBean remove = contact.remove(contactBean.getId());
+				deleteContact.add(remove);
+				deleteUser.add(contactBean);
+				userList.remove(contactBean.getUserName());
+
+				if (deleteContact.size() > 0) {
+					contactList.removeAll(deleteUser);
+					for (ContactBean removeContact : deleteContact) {
+						String path = null;
+						try {
+							path = new ApiParams()
+                                    .with(I.KEY_REQUEST, I.REQUEST_DELETE_CONTACT)
+                                    .with(I.Contact.MYUID, removeContact.getMyuid()+"")
+                                    .with(I.Contact.CUID, removeContact.getCuid()+"")
+                                    .getUrl(FuLiCenterApplication.SERVER_ROOT);
+							executeRequest(new GsonRequest<Boolean>(path,Boolean.class,
+									responseDeleteListener(),errorListener()));
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+
+
+
+
+
 			// 被删除
 			Map<String, User> localUsers = ((DemoHXSDKHelper)HXSDKHelper.getInstance()).getContactList();
-            HashMap<String, UserBean> userList = FuLiCenterApplication.getInstance().getUserList();
-            ArrayList<UserBean> contactList = FuLiCenterApplication.getInstance().getContactList();
-            HashMap<Integer, ContactBean> contacts = FuLiCenterApplication.getInstance().getContacts();
-
-            for (String username : usernameList) {
+			for (String username : usernameList) {
 				localUsers.remove(username);
-                userList.remove(username);
-				EMUserDao.deleteContact(username);
+				userDao.deleteContact(username);
 				inviteMessgeDao.deleteMessage(username);
 			}
-            ArrayList<ContactBean> deleteContacts = new ArrayList<ContactBean>();
-            ArrayList<UserBean> deleteContactList = new ArrayList<UserBean>();
-            //删除内存中好友，删除的好友存放在deleteContactList和deleteContacts集合中
-            for(UserBean contactUser : contactList){
-                if(usernameList.contains(contactUser.getUserName())){
-                    ContactBean contact = contacts.remove(contactUser.getId());
-                    deleteContacts.add(contact);
-                    deleteContactList.add(contactUser);
-                }
-            }
-            if(deleteContacts.size()>0){
-                contactList.removeAll(deleteContactList);//删除内存中好友
-                // 删除应用服务器的联系人记录
-                try {
-                    for(ContactBean contact : deleteContacts) {
-                        String path = new ApiParams()
-                                .with(I.Contact.MYUID, contact.getMyuid() + "")
-                                .with(I.Contact.CUID, contact.getCuid() + "")
-                                .getRequestUrl(I.REQUEST_DELETE_CONTACT);
-                        Log.e(TAG,"delete contacts,path="+path);
-                        executeRequest(new GsonRequest<Boolean>(path, Boolean.class,
-                                responseDeleteContactListener(), errorListener()));
-                    }
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
-            }
 			runOnUiThread(new Runnable() {
 				public void run() {
 					// 如果正在与此用户的聊天页面
@@ -580,19 +608,7 @@ public class MainActivity extends BaseActivity implements EMEventListener {
 
 		}
 
-        private Response.Listener<Boolean> responseDeleteContactListener() {
-            return new Response.Listener<Boolean>() {
-                @Override
-                public void onResponse(Boolean isSuccess) {
-                    if(isSuccess){
-                        Intent intent = new Intent("update_contacts").setAction("update_contact_list");
-                        mContext.sendBroadcast(intent);
-                    }
-                }
-            };
-        }
-
-        @Override
+		@Override
 		public void onContactInvited(String username, String reason) {
 			
 			// 接到邀请的消息，如果不处理(同意或拒绝)，掉线后，服务器会自动再发过来，所以客户端不需要重复提醒
@@ -610,7 +626,7 @@ public class MainActivity extends BaseActivity implements EMEventListener {
 			msg.setReason(reason);
 			Log.d(TAG, username + "请求加你为好友,reason: " + reason);
 			// 设置相应status
-			msg.setStatus(InviteMessage.InviteMesageStatus.BEINVITEED);
+			msg.setStatus(InviteMesageStatus.BEINVITEED);
 			notifyNewIviteMessage(msg);
 
 		}
@@ -628,7 +644,7 @@ public class MainActivity extends BaseActivity implements EMEventListener {
 			msg.setFrom(username);
 			msg.setTime(System.currentTimeMillis());
 			Log.d(TAG, username + "同意了你的好友请求");
-			msg.setStatus(InviteMessage.InviteMesageStatus.BEAGREED);
+			msg.setStatus(InviteMesageStatus.BEAGREED);
 			notifyNewIviteMessage(msg);
 
 		}
@@ -642,6 +658,73 @@ public class MainActivity extends BaseActivity implements EMEventListener {
 
 	}
 
+	private Response.Listener<Boolean> responseDeleteListener() {
+		return new Response.Listener<Boolean>() {
+			@Override
+			public void onResponse(Boolean aBoolean) {
+				if (aBoolean) {
+					Intent intent=new Intent("update_contactsList").setAction("update_contacts");
+					mContext.sendBroadcast(intent);
+				}
+			}
+		};
+	}
+
+
+	private void setAddContact(String userNane, String cName) {
+
+		try {
+			String path = new ApiParams()
+                    .with(I.User.USER_NAME, userNane)
+                    .with(I.Contact.NAME, cName)
+                    .getRequestUrl(I.REQUEST_ADD_CONTACT);
+			executeRequest(new GsonRequest<ContactBean>(path, ContactBean.class,
+					responseListener(cName), errorListener()));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	private Response.Listener<ContactBean> responseListener(final String cName) {
+		return new Response.Listener<ContactBean>() {
+			@Override
+			public void onResponse(ContactBean contact) {
+				if (contact != null && "ok".equals(contact.getResult())) {
+					HashMap<Integer, ContactBean> contacts = FuLiCenterApplication.getInstance().getContacts();
+					contacts.put(contact.getCuid(), contact);
+				}
+				try {
+					String path = new ApiParams()
+                            .with(I.User.USER_NAME, cName)
+                            .getRequestUrl(I.REQUEST_FIND_USER);
+					executeRequest(new GsonRequest<UserBean>(path, UserBean.class,
+							responseUserBeanListener(), errorListener()));
+
+
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+
+			}
+		};
+	}
+
+	private Response.Listener<UserBean> responseUserBeanListener() {
+		return new Response.Listener<UserBean>() {
+			@Override
+			public void onResponse(UserBean userBean) {
+				ArrayList<UserBean> contactList = FuLiCenterApplication.getInstance().getContactList();
+				contactList.add(userBean);
+				HashMap<String, UserBean> userList = FuLiCenterApplication.getInstance().getUserList();
+				userList.put(userBean.getUserName(), userBean);
+
+				Intent intent = new Intent("update_contactsList");
+				Log.i("main", "ChangeIntent");
+				mContext.sendStickyBroadcast(intent);
+			}
+		};
+	}
+
 	/**
 	 * 连接监听listener
 	 * 
@@ -650,10 +733,11 @@ public class MainActivity extends BaseActivity implements EMEventListener {
 
 		@Override
 		public void onConnected() {
+            boolean groupSynced = HXSDKHelper.getInstance().isGroupsSyncedWithServer();
             boolean contactSynced = HXSDKHelper.getInstance().isContactsSyncedWithServer();
             
             // in case group and contact were already synced, we supposed to notify sdk we are ready to receive the events
-            if(contactSynced){
+            if(groupSynced && contactSynced){
                 new Thread(){
                     @Override
                     public void run(){
@@ -662,10 +746,14 @@ public class MainActivity extends BaseActivity implements EMEventListener {
                 }.start();
             }else{
 
+                
                 if(!contactSynced){
                     asyncFetchContactsFromServer();
                 }
                 
+                if(!HXSDKHelper.getInstance().isBlackListSyncedWithServer()){
+                    asyncFetchBlackListFromServer();
+                }
             }
             
 			runOnUiThread(new Runnable() {
@@ -704,6 +792,30 @@ public class MainActivity extends BaseActivity implements EMEventListener {
 
 			});
 		}
+	}
+
+
+
+
+
+
+	private Response.Listener<UserBean[]> responseDownloadGroupMembers(final String groupId) {
+		return new Response.Listener<UserBean[]>() {
+			@Override
+			public void onResponse(UserBean[] userBeen) {
+				if (userBeen != null) {
+					ArrayList<UserBean> userBeen1 = Utils.array2List(userBeen);
+					HashMap<String, ArrayList<UserBean>> groupMembers = FuLiCenterApplication.getInstance().getGroupMembers();
+					ArrayList<UserBean> member = groupMembers.get(groupId);
+					if (member == null) {
+						member = new ArrayList<>();
+						groupMembers.put(groupId, member);
+					}
+					member.addAll(userBeen1);
+					member.add(FuLiCenterApplication.getInstance().getUser());
+				}
+			}
+		};
 	}
 
 

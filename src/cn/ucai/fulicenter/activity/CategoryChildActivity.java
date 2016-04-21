@@ -1,14 +1,14 @@
 package cn.ucai.fulicenter.activity;
 
+import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.android.volley.Response;
@@ -18,23 +18,29 @@ import java.util.ArrayList;
 import cn.ucai.fulicenter.I;
 import cn.ucai.fulicenter.R;
 import cn.ucai.fulicenter.adapter.GoodAdapter;
+import cn.ucai.fulicenter.bean.CategoryChildBean;
+import cn.ucai.fulicenter.bean.ColorBean;
 import cn.ucai.fulicenter.bean.NewGoodBean;
 import cn.ucai.fulicenter.data.ApiParams;
 import cn.ucai.fulicenter.data.GsonRequest;
-import cn.ucai.fulicenter.utils.CatChildFilterButton;
-import cn.ucai.fulicenter.utils.ColorFilterButton;
+import cn.ucai.fulicenter.utils.ImageUtils;
 import cn.ucai.fulicenter.utils.Utils;
+import cn.ucai.fulicenter.view.CatChildFilterButton;
+import cn.ucai.fulicenter.view.ColorFilterButton;
+import cn.ucai.fulicenter.view.DisplayUtils;
 
 /**
- * Created by sks on 2016/4/19.
+ * Created by ucai on 2016/4/19.
  */
-public class CategoryChildActivity extends BaseActivity {
-    FuLiCenterMainActivity mContext = new FuLiCenterMainActivity();
+public class CategoryChildActivity extends  BaseActivity{
+
     ArrayList<NewGoodBean> mGoodList;
     GoodAdapter mAdapter;
     private  int pageId = 0;
     private int action = I.ACTION_DOWNLOAD;
     String path;
+    int catId;
+
 
     /** 下拉刷新控件*/
     SwipeRefreshLayout mSwipeRefreshLayout;
@@ -42,27 +48,39 @@ public class CategoryChildActivity extends BaseActivity {
     TextView mtvHint;
     GridLayoutManager mGridLayoutManager;
 
-    ColorFilterButton mColorFilterButton;
     CatChildFilterButton mCatChildFilterButton;
+    ColorFilterButton mColorFilterButton;
+    Button mbtnPriceSort;
+    Button mbtnaddtimeSort;
+    ArrayList<CategoryChildBean> mChildlist;
 
+    int sortBy;
+    boolean mSortByPriceAsc;
+    boolean mSortByAddtimeAsc;
+    Context mContext;
+    String mGroupName;
 
-    public View onCreate(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-//        mContext = FuLiCenterMainActivity.this;
-        View layout = View.inflate(mContext, R.layout.fragment_new_good,null);
+    @Override
+    protected void onCreate(Bundle arg0) {
+        super.onCreate(arg0);
+        mContext=this;
+        setContentView(R.layout.activity_child_category);
         mGoodList = new ArrayList<NewGoodBean>();
-        initView(layout);
-        setListener();
+        sortBy = I.SORT_BY_ADDTIME_DESC;
+        initView();
         initData();
-        return layout;
+        setListener();
     }
+
     private void setListener() {
         setPullDownRefreshListener();
         setPullUpRefreshListener();
+        SortStateChangerdListener mSortStateChangerdListener = new SortStateChangerdListener();
+        mbtnPriceSort.setOnClickListener(mSortStateChangerdListener);
+        mbtnaddtimeSort.setOnClickListener(mSortStateChangerdListener);
+        mCatChildFilterButton.setOnCatFilterClickListener(mGroupName, mChildlist);
     }
 
-    /**
-     * 上拉刷新事件监听
-     */
     private void setPullUpRefreshListener() {
         mRecyclerView.setOnScrollListener(
                 new RecyclerView.OnScrollListener() {
@@ -77,9 +95,9 @@ public class CategoryChildActivity extends BaseActivity {
                                 action = I.ACTION_PULL_UP;
                                 pageId +=I.PAGE_SIZE_DEFAULT;
                                 getPath(pageId);
-                                mContext.executeRequest(new GsonRequest<NewGoodBean[]>(path,
+                                executeRequest(new GsonRequest<NewGoodBean[]>(path,
                                         NewGoodBean[].class,responseDownloadNewGoodListener(),
-                                        mContext.errorListener()));
+                                        errorListener()));
                             }
                         }
                     }
@@ -109,28 +127,49 @@ public class CategoryChildActivity extends BaseActivity {
                         pageId = 0;
                         action = I.ACTION_PULL_DOWN;
                         getPath(pageId);
-                        mContext.executeRequest(new GsonRequest<NewGoodBean[]>(path,
+                        executeRequest(new GsonRequest<NewGoodBean[]>(path,
                                 NewGoodBean[].class,responseDownloadNewGoodListener(),
-                                mContext.errorListener()));
+                                errorListener()));
                     }
                 }
         );
     }
 
     private void initData() {
+        catId = getIntent().getIntExtra(I.CategoryChild.CAT_ID, 0);
+        mChildlist = (ArrayList<CategoryChildBean>) getIntent().getSerializableExtra("childList");
         try {
             getPath(pageId);
-            mContext.executeRequest(new GsonRequest<NewGoodBean[]>(path,
+            executeRequest(new GsonRequest<NewGoodBean[]>(path,
                     NewGoodBean[].class,responseDownloadNewGoodListener(),
-                    mContext.errorListener()));
+                    errorListener()));
+            String colorUrl = new ApiParams().with(I.Color.CAT_ID, catId + "")
+                    .getRequestUrl(I.REQUEST_FIND_COLOR_LIST);
+            executeRequest(new GsonRequest<ColorBean[]>(colorUrl,
+                    ColorBean[].class,responseDownloadColorListener(),
+                    errorListener()));
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+    private Response.Listener<ColorBean[]> responseDownloadColorListener() {
+        return new Response.Listener<ColorBean[]>() {
+            @Override
+            public void onResponse(ColorBean[] colorBeen) {
+                if (colorBeen != null) {
+                    ArrayList<ColorBean> list = Utils.array2List(colorBeen);
+                    mColorFilterButton.setVisibility(View.VISIBLE);
+                    mColorFilterButton.setOnColorFilterClickListener(mGroupName, mChildlist, list);
+                }
+            }
+        };
+    }
+
     private String getPath(int pageId){
         try {
             path = new ApiParams()
-                    .with(I.NewAndBoutiqueGood.CAT_ID, I.CAT_ID+"")
+                    .with(I.NewAndBoutiqueGood.CAT_ID, catId+"")
                     .with(I.PAGE_ID, pageId+"")
                     .with(I.PAGE_SIZE, I.PAGE_SIZE_DEFAULT+"")
                     .getRequestUrl(I.REQUEST_FIND_NEW_BOUTIQUE_GOODS);
@@ -149,7 +188,7 @@ public class CategoryChildActivity extends BaseActivity {
                     mAdapter.setMore(true);
                     mSwipeRefreshLayout.setRefreshing(false);
                     mtvHint.setVisibility(View.GONE);
-                    mAdapter.setFooterText(getResources().getString(R.string.load_more));
+                    mAdapter.setFooterText(R.string.loading_more+"");
                     //将数组转换为集合
                     ArrayList<NewGoodBean> list = Utils.array2List(newGoodBeen);
                     if (action == I.ACTION_DOWNLOAD || action == I.ACTION_PULL_DOWN) {
@@ -159,28 +198,79 @@ public class CategoryChildActivity extends BaseActivity {
                     }
                     if(newGoodBeen.length<I.PAGE_SIZE_DEFAULT){
                         mAdapter.setMore(false);
-                        mAdapter.setFooterText(getResources().getString(R.string.no_more));
+                        mAdapter.setFooterText(R.string.no_more_data+"");
                     }
                 }
             }
         };
     }
 
-    private void initView(View layout) {
-        mSwipeRefreshLayout = (SwipeRefreshLayout) layout.findViewById(R.id.sfl_newgood);
+    private void initView() {
+        //更改显示精品二级标题
+       mGroupName = getIntent().getStringExtra(I.Boutique.NAME);
+        mCatChildFilterButton = (CatChildFilterButton) findViewById(R.id.btnCatFilter);
+        mCatChildFilterButton.setText(mGroupName);
+        DisplayUtils.initBack(this);
+        mColorFilterButton = (ColorFilterButton) findViewById(R.id.cfbColor);
+        mColorFilterButton.setVisibility(View.INVISIBLE);
+        mbtnPriceSort = (Button) findViewById(R.id.btnPriceSort);
+        mbtnaddtimeSort = (Button) findViewById(R.id.btnAddTimeSort);
+
+
+        mSwipeRefreshLayout = (SwipeRefreshLayout)findViewById(R.id.sfl_newgood);
         mSwipeRefreshLayout.setColorSchemeColors(
                 R.color.google_blue,
                 R.color.google_green,
                 R.color.google_red,
                 R.color.google_yellow
         );
-        mtvHint = (TextView) layout.findViewById(R.id.tv_refresh_hint);
-        mGridLayoutManager = new GridLayoutManager(mContext, I.COLUM_NUM);
+        mtvHint = (TextView)findViewById(R.id.tv_refresh_hint);
+        mGridLayoutManager = new GridLayoutManager(this, I.COLUM_NUM);
         mGridLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
-        mRecyclerView = (RecyclerView) layout.findViewById(R.id.rv_newgood);
+        mRecyclerView = (RecyclerView)findViewById(R.id.rv_newgood);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(mGridLayoutManager);
-        mAdapter = new GoodAdapter(mContext,mGoodList,I.SORT_BY_ADDTIME_DESC);
+        mAdapter = new GoodAdapter(this,mGoodList,sortBy);
         mRecyclerView.setAdapter(mAdapter);
+    }
+
+    private class SortStateChangerdListener implements View.OnClickListener {
+
+        @Override
+        public void onClick(View v) {
+            Drawable right;
+            int resId;
+            switch (v.getId()) {
+                case R.id.btnPriceSort:
+                    if (mSortByPriceAsc) {
+                        sortBy = I.SORT_BY_PRICE_ASC;
+                        right = mContext.getResources().getDrawable(R.drawable.arrow_order_up);
+                        resId = R.drawable.arrow_order_up;
+                    } else {
+                        sortBy = I.SORT_BY_PRICE_DESC;
+                        right = mContext.getResources().getDrawable(R.drawable.arrow_order_down);
+                        resId = R.drawable.arrow_order_down;
+                    }
+                    mSortByPriceAsc = !mSortByPriceAsc;
+                    right.setBounds(0, 0, ImageUtils.getDrawableWidth(mContext, resId), ImageUtils.getDrawableHeight(mContext, resId));
+                    mbtnPriceSort.setCompoundDrawables(null, null, right, null);
+                    break;
+                case R.id.btnAddTimeSort:
+                    if (mSortByAddtimeAsc) {
+                        sortBy = I.SORT_BY_ADDTIME_ASC;
+                        right = mContext.getResources().getDrawable(R.drawable.arrow_order_up);
+                        resId = R.drawable.arrow_order_up;
+                    } else {
+                        sortBy = I.SORT_BY_ADDTIME_DESC;
+                        right = mContext.getResources().getDrawable(R.drawable.arrow_order_down);
+                        resId = R.drawable.arrow_order_down;
+                    }
+                    mSortByAddtimeAsc = !mSortByAddtimeAsc;
+                    right.setBounds(0, 0, ImageUtils.getDrawableWidth(mContext, resId), ImageUtils.getDrawableHeight(mContext, resId));
+                    mbtnaddtimeSort.setCompoundDrawables(null, null, right, null);
+                    break;
+            }
+            mAdapter.setSortBy(sortBy);
+        }
     }
 }

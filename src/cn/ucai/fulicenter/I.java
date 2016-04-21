@@ -5,15 +5,22 @@ package cn.ucai.fulicenter;
  */
 public interface I {
 
-    public static final int SORT_BY_PRICE_ASC = 1;
-    public static final int SORT_BY_PRICE_DESC = 2;
-    public static final int SORT_BY_ADDTIME_ASC = 3;
-    public static final int SORT_BY_ADDTIME_DESC = 4;
-    public static final int CAT_ID = 0;
 
     public static final String AVATAR_PATH = "D:/project/github/SuperWeChat_Database/";
-    public static final String PAGE_ID = "page_id";
-    public static final String PAGE_SIZE = "page_size";
+//    public static final String PAGE_ID = "pageId";
+//    public static final String PAGE_SIZE = "pageSize";
+    /**页号*/
+    public static final String PAGE_ID="page_id";
+
+    /**每页加载的数据*/
+    public static final String PAGE_SIZE="page_size";
+
+    /**排序定义
+     * */
+    public final int SORT_BY_PRICE_ASC=1;
+    public final int SORT_BY_PRICE_DESC=2;
+    public final int SORT_BY_ADDTIME_ASC=3;
+    public final int SORT_BY_ADDTIME_DESC=4;
     /** 上传图片的类型：user_avatar或group_icon */
     public static final String AVATAR_TYPE = "avatarType";
     public static final String FILE_NAME="file_name";
@@ -57,7 +64,7 @@ public interface I {
     //货币单位
     public static final String CURRENCY_TYPE_CNY = "CNY";
     public static final String CURRENCY_TYPE_USD = "USD";
-
+    
     class Cart{
         public static final String ID="id";
         public static final String GOODS_ID="goods_id";
@@ -198,7 +205,13 @@ public interface I {
         public static final String CUID = "cuid";
     }
 
+    public enum ActionType {
+        ACTION_DOWNLOAD, ACTION_PULL_DOWN, ACTION_SCROLL
+    }
 
+    public final int NEW_GOOD=0;
+    public final int CATEGORY_GOOD=1;
+    public final int CAT_ID=0;
 
     public static final String KEY_REQUEST = "request";
     public static final String REQUEST_SERVERSTATUS = "server_status";
@@ -323,7 +336,7 @@ String REQUEST_FIND_CHARGE = "find_charge";
     String REQUEST_DOWNLOAD_CATEGORY_CHILD_IMAGE="download_category_child_image";
     /** 下载分类商品小类图像的接口*/
     String DOWNLOAD_DOWNLOAD_CATEGORY_CHILD_IMAGE_URL=FuLiCenterApplication.SERVER_ROOT+
-        "?request="+REQUEST_DOWNLOAD_CATEGORY_GROUP_IMAGE
+        "?request="+REQUEST_DOWNLOAD_CATEGORY_CHILD_IMAGE
         +"&"+D.CategoryChild.IMAGE_URL+"=";
     
     String REQUEST_UPLOAD_NICK="upload_nick";
@@ -331,4 +344,16 @@ String REQUEST_FIND_CHARGE = "find_charge";
     String REQUEST_PAY="pay";
     /**壹收款服务端支付URL*/
     String PAY_URL=FuLiCenterApplication.SERVER_ROOT+"?request="+REQUEST_PAY;
+
+
+
+    final static int ACTION_ADD_COLLECT = 1;
+    final static int ACTION_DELETE_COLLECT = 2;
+
+
+
+
+
+
+
 }

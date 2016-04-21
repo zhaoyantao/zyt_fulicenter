@@ -43,6 +43,16 @@ public class FuLiCenterApplication extends Application {
 	public static String currentUserNick = "";
 	public static DemoHXSDKHelper hxSDKHelper = new DemoHXSDKHelper();
 
+
+	private int collectGood;
+
+	public int getCollectGood() {
+		return collectGood;
+	}
+
+	public void setCollectGood(int collectGood) {
+		this.collectGood = collectGood;
+	}
 	@Override
 	public void onCreate() {
 		super.onCreate();

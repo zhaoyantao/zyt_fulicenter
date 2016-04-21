@@ -24,9 +24,10 @@ import cn.ucai.fulicenter.I;
 import cn.ucai.fulicenter.R;
 import cn.ucai.fulicenter.activity.CategoryChildActivity;
 import cn.ucai.fulicenter.bean.CategoryChildBean;
-import cn.ucai.fulicenter.bean.colorBean;
+import cn.ucai.fulicenter.bean.ColorBean;
 import cn.ucai.fulicenter.bean.GoodDetailsBean;
 import cn.ucai.fulicenter.bean.NewGoodBean;
+import cn.ucai.fulicenter.bean.PropertiesBean;
 import cn.ucai.fulicenter.bean.PropertyBean;
 import cn.ucai.fulicenter.data.ApiParams;
 import cn.ucai.fulicenter.data.GsonRequest;
@@ -65,9 +66,9 @@ public class ColorFilterButton extends Button {
 
     class ColorFilterAdapter extends BaseAdapter {
         Context context;
-        ArrayList<colorBean> colorList;
+        ArrayList<ColorBean> colorList;
         public ColorFilterAdapter(Context context,
-                ArrayList<colorBean> colorList) {
+                ArrayList<ColorBean> colorList) {
             super();
             this.context = context;
             this.colorList = colorList;
@@ -79,7 +80,7 @@ public class ColorFilterButton extends Button {
         }
 
         @Override
-        public colorBean getItem(int position) {
+        public ColorBean getItem(int position) {
             return colorList.get(position);
         }
 
@@ -100,7 +101,7 @@ public class ColorFilterButton extends Button {
             }else{
                 holder=(ViewHolder) layout.getTag();
             }
-            final colorBean color = getItem(position);
+            final ColorBean color = getItem(position);
             String colorName=color.getColorName();
             if(colorName.length()>4){
                 colorName=colorName.substring(0,3);
@@ -141,7 +142,7 @@ public class ColorFilterButton extends Button {
                             NewGoodBean good=new NewGoodBean();
                             good.setAddTime(goodDetails.getAddTime());
                             good.setCatId(goodDetails.getCatId());
-                            PropertyBean p = goodDetails.getProperties()[0];
+                            PropertiesBean p = goodDetails.getProperties()[0];
                             good.setColorCode(p.getColorCode());
                             good.setColorId(p.getColorId());
                             good.setColorName(p.getColorName());
@@ -179,7 +180,7 @@ public class ColorFilterButton extends Button {
     }
 
     public void setOnColorFilterClickListener(String groupName, ArrayList<CategoryChildBean> childList,
-                                              final ArrayList<colorBean> colorList){
+                                              final ArrayList<ColorBean> colorList){
         mChildList=childList;
         mGroupName=groupName;
         mbtnTop.setOnClickListener(new OnClickListener() {

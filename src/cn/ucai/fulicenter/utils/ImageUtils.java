@@ -64,18 +64,27 @@ public class ImageUtils {
 		return folder.getAbsolutePath();
 	}
 
-	public static void setNewGoodThumb(String goodsThumb, NetworkImageView nivThumb) {
+	public static void setNewGoodThumb(String thumb, NetworkImageView imageView) {
 		String url = FuLiCenterApplication.SERVER_ROOT
-				+"?"+ I.KEY_REQUEST+"="+I.REQUEST_DOWNLOAD_NEW_GOOD
-				+"&"+I.FILE_NAME+"="+goodsThumb;
-		nivThumb.setImageUrl(url, RequestManager.getImageLoader());
-		nivThumb.setDefaultImageResId(R.drawable.nopic);
-		nivThumb.setErrorImageResId(R.drawable.nopic);
+				+ "?" + I.KEY_REQUEST + "=" + I.REQUEST_DOWNLOAD_NEW_GOOD
+				+ "&" + I.FILE_NAME + "=" + thumb;
+		imageView.setImageUrl(url, RequestManager.getImageLoader());
+		imageView.setDefaultImageResId(R.drawable.nopic);
+		imageView.setErrorImageResId(R.drawable.nopic);
 	}
-	public static void setThumb(String url, NetworkImageView nivThumb) {
-		nivThumb.setImageUrl(url, RequestManager.getImageLoader());
-		nivThumb.setDefaultImageResId(R.drawable.nopic);
-		nivThumb.setErrorImageResId(R.drawable.nopic);
+	public static void setThumb(String path, NetworkImageView imageView) {
+		imageView.setImageUrl(path, RequestManager.getImageLoader());
+		imageView.setDefaultImageResId(R.drawable.nopic);
+		imageView.setErrorImageResId(R.drawable.nopic);
+	}
+
+	public static void setGoodDetailThumb(String colorImg, NetworkImageView imageView) {
+		String url = FuLiCenterApplication.SERVER_ROOT
+				+ "?" + I.KEY_REQUEST + "=" + I.REQUEST_DOWNLOAD_COLOR_IMG
+				+ "&" + I.Color.COLOR_IMG+ "=" + colorImg;
+		imageView.setImageUrl(url, RequestManager.getImageLoader());
+		imageView.setDefaultImageResId(R.drawable.bg_good);
+		imageView.setErrorImageResId(R.drawable.bg_good);
 	}
 	public static int getDrawableWidth(Context context,int resId){
 		Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), resId);

@@ -35,7 +35,7 @@
             android:layout_toRightOf="@id/iv_userhead"
              >
 
-            <ImageView
+            <com.android.volley.toolbox.NetworkImageView
                 android:background="@drawable/chatfrom_bg"
                 android:id="@+id/iv_sendPicture"
                 android:layout_width="wrap_content"

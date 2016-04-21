@@ -2,7 +2,6 @@ package cn.ucai.fulicenter.adapter;
 
 import android.content.Context;
 import android.content.Intent;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
@@ -21,14 +20,16 @@ import cn.ucai.fulicenter.bean.CategoryChildBean;
 import cn.ucai.fulicenter.bean.CategoryGroupBean;
 import cn.ucai.fulicenter.utils.ImageUtils;
 
-
-public class CategoryAdapter extends BaseExpandableListAdapter {
+/**
+ * Created by ucai on 2016/4/19.
+ */
+public class Categoryadapter extends BaseExpandableListAdapter{
 
     Context mContext;
     ArrayList<CategoryGroupBean> categoryList;
     ArrayList<ArrayList<CategoryChildBean>> childList;
 
-    public CategoryAdapter(Context mContext, ArrayList<CategoryGroupBean> categoryList, ArrayList<ArrayList<CategoryChildBean>> childList) {
+    public Categoryadapter(Context mContext, ArrayList<CategoryGroupBean> categoryList, ArrayList<ArrayList<CategoryChildBean>> childList) {
         this.mContext = mContext;
         this.categoryList = categoryList;
         this.childList = childList;
@@ -36,12 +37,12 @@ public class CategoryAdapter extends BaseExpandableListAdapter {
 
     @Override
     public int getGroupCount() {
-        return categoryList==null?0:categoryList.size();
+        return categoryList.size() == 0 ? 0 : categoryList.size();
     }
 
     @Override
     public int getChildrenCount(int groupPosition) {
-        return childList==null||childList.get(groupPosition)==null?0:childList.get(groupPosition).size();
+        return childList.get(groupPosition).size()==0?0:childList.get(groupPosition).size();
     }
 
     @Override
@@ -56,12 +57,12 @@ public class CategoryAdapter extends BaseExpandableListAdapter {
 
     @Override
     public long getGroupId(int groupPosition) {
-        return 0;
+        return categoryList.get(groupPosition).getId();
     }
 
     @Override
     public long getChildId(int groupPosition, int childPosition) {
-        return 0;
+        return childList.get(groupPosition).get(childPosition).getId();
     }
 
     @Override
@@ -70,55 +71,60 @@ public class CategoryAdapter extends BaseExpandableListAdapter {
     }
 
     @Override
-    public View getGroupView(int groupPosition, boolean isExpanded, View layout, ViewGroup parent) {
+    public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
         ViewGroupHolder holder = null;
-        if(layout==null){
-            layout = View.inflate(mContext,R.layout.item_category_group,null);
-            holder = new ViewGroupHolder(layout);
-            layout.setTag(holder);
-        }else{
-            holder = (ViewGroupHolder) layout.getTag();
+        if (convertView == null) {
+            convertView = View.inflate(mContext, R.layout.item_category_group, null);
+            holder = new ViewGroupHolder();
+            holder.ivGroupSelect = (ImageView) convertView.findViewById(R.id.iv_group_select);
+            holder.nivGroupThumb = (NetworkImageView) convertView.findViewById(R.id.niv_group_thumb);
+            holder.tvGroupName = (TextView) convertView.findViewById(R.id.tv_group_name);
+            convertView.setTag(holder);
+        } else {
+            holder = (ViewGroupHolder) convertView.getTag();
         }
         CategoryGroupBean group = getGroup(groupPosition);
-        holder.mCategoryGroupName.setText(group.getName());
-        String url = I.DOWNLOAD_DOWNLOAD_CATEGORY_GROUP_IMAGE_URL+group.getImageUrl();
-        ImageUtils.setThumb(url,holder.mCategoryGroupImage);
+        holder.tvGroupName.setText(group.getName());
+        String url = I.DOWNLOAD_DOWNLOAD_CATEGORY_GROUP_IMAGE_URL + group.getImageUrl();
+        ImageUtils.setThumb(url, holder.nivGroupThumb);
 
-        if(isExpanded){
-            holder.mCategoryGroupIcon.setImageResource(R.drawable.expand_off);
-        }else{
-            holder.mCategoryGroupIcon.setImageResource(R.drawable.expand_on);
+        if (isExpanded) {
+            holder.ivGroupSelect.setImageResource(R.drawable.expand_off);
+        } else {
+            holder.ivGroupSelect.setImageResource(R.drawable.expand_on);
         }
-        return layout;
+        return convertView;
     }
 
     @Override
-    public View getChildView(final int groupPosition, int childPosition, boolean isLastChild, View layout, ViewGroup parent) {
+    public View getChildView(final int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
         ViewChildHolder holder = null;
-        if(layout==null){
-            layout = View.inflate(mContext,R.layout.item_category_child,null);
-            holder = new ViewChildHolder(layout);
-            layout.setTag(holder);
-        }else{
-            holder = (ViewChildHolder) layout.getTag();
+        if (convertView == null) {
+            convertView = View.inflate(mContext, R.layout.item_category_child, null);
+            holder = new ViewChildHolder();
+            holder.layoutItem = (RelativeLayout) convertView.findViewById(R.id.layout_child_category);
+            holder.nivChildThumb = (NetworkImageView) convertView.findViewById(R.id.niv_child_thumb);
+            holder.tvChildName = (TextView) convertView.findViewById(R.id.tv_child_name);
+            convertView.setTag(holder);
+        } else {
+            holder = (ViewChildHolder) convertView.getTag();
         }
-        final CategoryChildBean child = getChild(groupPosition,childPosition);
-        String name = child.getName();
-        holder.mCategoryChildName.setText(name);
-        String url = I.DOWNLOAD_DOWNLOAD_CATEGORY_CHILD_IMAGE_URL+child.getImageUrl();
-        ImageUtils.setThumb(url,holder.mCategoryChildImage);
-        holder.childLayout.setOnClickListener(new View.OnClickListener(){
+        final CategoryChildBean child = getChild(groupPosition, childPosition);
+        holder.tvChildName.setText(child.getName());
+        String url = I.DOWNLOAD_DOWNLOAD_CATEGORY_CHILD_IMAGE_URL + child.getImageUrl();
+        ImageUtils.setThumb(url, holder.nivChildThumb);
+
+        holder.layoutItem.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(mContext, CategoryChildActivity.class);
-                intent.putExtra(I.CategoryChild.CAT_ID,child.getId());
-                ArrayList<CategoryChildBean> children = childList.get(groupPosition);
-                intent.putExtra("children",children);
-                intent.putExtra(I.CategoryGroup.NAME,getGroup(groupPosition).getName());
+                intent.putExtra(I.CategoryChild.CAT_ID, child.getId());
+                intent.putExtra(I.CategoryChild.NAME, categoryList.get(groupPosition).getName());
+                intent.putExtra("childList", childList.get(groupPosition));
                 mContext.startActivity(intent);
             }
         });
-        return layout;
+        return convertView;
     }
 
     @Override
@@ -127,37 +133,23 @@ public class CategoryAdapter extends BaseExpandableListAdapter {
     }
 
 
-    class ViewGroupHolder extends RecyclerView.ViewHolder{
-        RelativeLayout groupLayout;
-        NetworkImageView mCategoryGroupImage;
-        TextView mCategoryGroupName;
-        ImageView mCategoryGroupIcon;
-
-        public ViewGroupHolder(View itemView) {
-            super(itemView);
-            groupLayout = (RelativeLayout) itemView.findViewById(R.id.layout_category_group);
-            mCategoryGroupImage = (NetworkImageView) itemView.findViewById(R.id.iv_category_group);
-            mCategoryGroupName = (TextView) itemView.findViewById(R.id.tv_category);
-            mCategoryGroupIcon = (ImageView) itemView.findViewById(R.id.iv_category_group_icon);
-        }
-    }
-    class ViewChildHolder extends RecyclerView.ViewHolder{
-        RelativeLayout childLayout;
-        NetworkImageView mCategoryChildImage;
-        TextView mCategoryChildName;
-
-        public ViewChildHolder(View itemView) {
-            super(itemView);
-            childLayout = (RelativeLayout) itemView.findViewById(R.id.layout_category_child);
-            mCategoryChildImage = (NetworkImageView) itemView.findViewById(R.id.iv_category_child);
-            mCategoryChildName = (TextView) itemView.findViewById(R.id.tv_category_child);
-        }
-    }
-
-    public void addItems(ArrayList<CategoryGroupBean> groupList,
-            ArrayList<ArrayList<CategoryChildBean>> childList){
-        this.categoryList.addAll(groupList);
-        this.childList.addAll(childList);
+    public void addItems(ArrayList<CategoryGroupBean> grouplist, ArrayList<ArrayList<CategoryChildBean>> childlist) {
+        categoryList.addAll(grouplist);
+        childList.addAll(childlist);
         notifyDataSetChanged();
+    }
+
+    class ViewGroupHolder{
+        NetworkImageView nivGroupThumb;
+        TextView tvGroupName;
+        ImageView ivGroupSelect;
+
+    }
+
+    class ViewChildHolder {
+        RelativeLayout layoutItem;
+        NetworkImageView nivChildThumb;
+        TextView tvChildName;
+
     }
 }

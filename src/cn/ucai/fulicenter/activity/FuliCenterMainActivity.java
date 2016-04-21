@@ -20,7 +20,7 @@ import cn.ucai.fulicenter.data.GsonRequest;
 import cn.ucai.fulicenter.fragment.BoutiqueFragment;
 import cn.ucai.fulicenter.fragment.CategoryFragment;
 import cn.ucai.fulicenter.fragment.NewGoodFragment;
-import cn.ucai.fulicenter.fragment.PersonalCenterFragment;
+import cn.ucai.fulicenter.fragment.PersionalCenterFragment;
 
 /**
  * Created by clawpo on 16/4/16.
@@ -38,7 +38,7 @@ public class FuLiCenterMainActivity extends BaseActivity {
     NewGoodFragment mNewGoodFragment;
     BoutiqueFragment mBoutiqueFragment;
     CategoryFragment mCategoryFragment;
-    PersonalCenterFragment mPersionalCenterFragment;
+    PersionalCenterFragment mPersionalCenterFragment;
     Fragment[] mFragments = new Fragment[5];
 
     int index;
@@ -47,6 +47,8 @@ public class FuLiCenterMainActivity extends BaseActivity {
 
     String mCurrentUserName;
     private String action;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,8 +62,8 @@ public class FuLiCenterMainActivity extends BaseActivity {
                 .add(R.id.fragment_container, mNewGoodFragment)
                 .add(R.id.fragment_container, mBoutiqueFragment)
                 .add(R.id.fragment_container, mCategoryFragment)
-                .add(R.id.fragment_container, mPersionalCenterFragment)
-                .hide(mPersionalCenterFragment)
+//                .add(R.id.fragment_container, mPersionalCenterFragment)
+//                .hide(mPersionalCenterFragment)
                 .hide(mBoutiqueFragment)
                 .hide(mCategoryFragment)
                 .show(mNewGoodFragment)
@@ -72,7 +74,7 @@ public class FuLiCenterMainActivity extends BaseActivity {
         mNewGoodFragment = new NewGoodFragment();
         mBoutiqueFragment = new BoutiqueFragment();
         mCategoryFragment=new CategoryFragment();
-        mPersionalCenterFragment = new PersonalCenterFragment();
+        mPersionalCenterFragment = new PersionalCenterFragment();
         mFragments[0] = mNewGoodFragment;
         mFragments[1] = mBoutiqueFragment;
         mFragments[2] = mCategoryFragment;
@@ -161,7 +163,7 @@ public class FuLiCenterMainActivity extends BaseActivity {
                 mCurrentUserName = FuLiCenterApplication.getInstance().getUserName();
                 if (mCurrentUserName != null) {
                     index = 4;
-                    downloadCollectCount(mCurrentUserName);
+//                    downloadCollectCount(mCurrentUserName);
                 } else {
                     gotoLogin("persion");
                 }

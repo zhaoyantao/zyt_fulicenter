@@ -80,23 +80,12 @@ public class ChatRoomDetailsActivity extends BaseActivity implements OnClickList
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_group_details);
 		instance = this;
 		st = getResources().getString(R.string.people);
-		clearAllHistory = (RelativeLayout) findViewById(R.id.clear_all_history);
 		clearAllHistory.setVisibility(View.GONE);
 		userGridview = (ExpandGridView) findViewById(R.id.gridview);
 		loadingPB = (ProgressBar) findViewById(R.id.progressBar);
-		exitBtn = (Button) findViewById(R.id.btn_exit_grp);
-		deleteBtn = (Button) findViewById(R.id.btn_exitdel_grp);
-		blacklistLayout = (RelativeLayout) findViewById(R.id.rl_blacklist);
-		changeGroupNameLayout = (RelativeLayout) findViewById(R.id.rl_change_group_name);
 
-		blockGroupMsgLayout = (RelativeLayout)findViewById(R.id.rl_switch_block_groupmsg);
-		showChatRoomIdLayout = (RelativeLayout)findViewById(R.id.rl_group_id);
-		showChatRoomNickLayout = (RelativeLayout)findViewById(R.id.rl_group_nick);
-		chatRoomIdTextView = (TextView)findViewById(R.id.tv_group_id);
-		chatRoomNickTextView = (TextView)findViewById(R.id.tv_group_nick_value);
 
 		Drawable referenceDrawable = getResources().getDrawable(R.drawable.smiley_add_btn);
 		referenceWidth = referenceDrawable.getIntrinsicWidth();
@@ -124,7 +113,6 @@ public class ChatRoomDetailsActivity extends BaseActivity implements OnClickList
 			deleteBtn.setVisibility(View.GONE);
 		}
 		
-		((TextView) findViewById(R.id.group_name)).setText(room.getName());
 		List<String> owner = new ArrayList<String>();
 		owner.add(room.getOwner());
 		
@@ -231,7 +219,6 @@ public class ChatRoomDetailsActivity extends BaseActivity implements OnClickList
 	/**
 	 * 退出群组
 	 * 
-	 * @param groupId
 	 */
 	private void exitGrop() {
 		new Thread(new Runnable() {
@@ -267,7 +254,6 @@ public class ChatRoomDetailsActivity extends BaseActivity implements OnClickList
 
 					runOnUiThread(new Runnable() {
 						public void run() {
-							((TextView) findViewById(R.id.group_name)).setText(returnRoom.getName());
 							loadingPB.setVisibility(View.INVISIBLE);
 							adapter.notifyDataSetChanged();
 							if (EMChatManager.getInstance().getCurrentUser().equals(returnRoom.getOwner())) {
@@ -298,14 +284,6 @@ public class ChatRoomDetailsActivity extends BaseActivity implements OnClickList
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
-		case R.id.clear_all_history: // 清空聊天记录
-			String st9 = getResources().getString(R.string.sure_to_empty_this);
-			Intent intent = new Intent(ChatRoomDetailsActivity.this, AlertDialog.class);
-			intent.putExtra("cancel", true);
-			intent.putExtra("titleIsCancel", true);
-			intent.putExtra("msg", st9);
-			startActivityForResult(intent, REQUEST_CODE_CLEAR_ALL_HISTORY);
-			break;
 
 		default:
 			break;

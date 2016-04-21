@@ -21,7 +21,6 @@ import java.util.List;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.PixelFormat;
@@ -88,7 +87,7 @@ public class RecorderVideoActivity extends BaseActivity implements
 		// 选择支持半透明模式，在有surfaceview的activity中使用
 		getWindow().setFormat(PixelFormat.TRANSLUCENT);
 		setContentView(R.layout.recorder_activity);
-		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+		PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
 		mWakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK,
 				CLASS_LABEL);
 		mWakeLock.acquire();
@@ -121,7 +120,7 @@ public class RecorderVideoActivity extends BaseActivity implements
 		super.onResume();
 		if (mWakeLock == null) {
 			// 获取唤醒锁,保持屏幕常亮
-			PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+			PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
 			mWakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK,
 					CLASS_LABEL);
 			mWakeLock.acquire();

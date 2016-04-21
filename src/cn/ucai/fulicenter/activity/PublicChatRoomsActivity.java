@@ -73,13 +73,12 @@ public class PublicChatRoomsActivity extends BaseActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_public_groups);
 
 		// 搜索框
 		searching = (EditText)findViewById(R.id.query);
 		clean = (ImageButton)findViewById(R.id.search_clear);
 		searching.setHint(R.string.search);
-		inputMethodManager = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+		inputMethodManager = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
 		
 		pb = (ProgressBar) findViewById(R.id.progressBar);
 		listView = (ListView) findViewById(R.id.list);

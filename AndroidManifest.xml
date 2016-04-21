@@ -303,6 +303,7 @@
 
         <activity android:name=".activity.GoodDetailsActivity"></activity>
         <activity android:name=".activity.CategoryChildActivity"></activity>
+        <activity android:name=".activity.CollectActivity"></activity>
     </application>
 
 </manifest>

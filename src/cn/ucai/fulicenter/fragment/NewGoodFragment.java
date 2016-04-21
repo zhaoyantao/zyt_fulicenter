@@ -11,7 +11,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
 import com.android.volley.Response;
 
 import java.util.ArrayList;
@@ -29,6 +28,7 @@ import cn.ucai.fulicenter.utils.Utils;
  * Created by clawpo on 16/4/16.
  */
 public class NewGoodFragment extends Fragment {
+    public static final String TAG = NewGoodFragment.class.getName();
 
     FuLiCenterMainActivity mContext;
     ArrayList<NewGoodBean> mGoodList;
@@ -148,7 +148,7 @@ public class NewGoodFragment extends Fragment {
                     mAdapter.setMore(true);
                     mSwipeRefreshLayout.setRefreshing(false);
                     mtvHint.setVisibility(View.GONE);
-                    mAdapter.setFooterText(getResources().getString(R.string.load_more));
+                    mAdapter.setFooterText("jiazai");
                     //将数组转换为集合
                     ArrayList<NewGoodBean> list = Utils.array2List(newGoodBeen);
                     if (action == I.ACTION_DOWNLOAD || action == I.ACTION_PULL_DOWN) {
@@ -158,7 +158,7 @@ public class NewGoodFragment extends Fragment {
                     }
                     if(newGoodBeen.length<I.PAGE_SIZE_DEFAULT){
                         mAdapter.setMore(false);
-                        mAdapter.setFooterText(getResources().getString(R.string.no_more));
+                        mAdapter.setFooterText(R.string.no_more_data+"");
                     }
                 }
             }
