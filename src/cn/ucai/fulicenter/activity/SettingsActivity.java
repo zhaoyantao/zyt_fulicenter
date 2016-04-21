@@ -11,17 +11,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cn.ucai.fulicenter.fragment;
+package cn.ucai.fulicenter.activity;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -33,17 +30,10 @@ import com.easemob.EMCallBack;
 import com.easemob.chat.EMChatManager;
 import com.easemob.chat.EMChatOptions;
 
-import cn.ucai.fulicenter.Constant;
 import cn.ucai.fulicenter.DemoHXSDKHelper;
 import cn.ucai.fulicenter.DemoHXSDKModel;
 import cn.ucai.fulicenter.FuLiCenterApplication;
 import cn.ucai.fulicenter.R;
-import cn.ucai.fulicenter.activity.BlacklistActivity;
-import cn.ucai.fulicenter.activity.DiagnoseActivity;
-import cn.ucai.fulicenter.activity.LoginActivity;
-import cn.ucai.fulicenter.activity.MainActivity;
-import cn.ucai.fulicenter.activity.OfflinePushNickActivity;
-import cn.ucai.fulicenter.activity.UserProfileActivity;
 import cn.ucai.fulicenter.applib.controller.HXSDKHelper;
 
 /**
@@ -52,7 +42,7 @@ import cn.ucai.fulicenter.applib.controller.HXSDKHelper;
  * @author Administrator
  * 
  */
-public class SettingsFragment extends Fragment implements OnClickListener {
+public class SettingsActivity extends BaseActivity implements OnClickListener {
 
 	/**
 	 * 设置新消息通知布局
@@ -135,48 +125,46 @@ public class SettingsFragment extends Fragment implements OnClickListener {
 	
 	DemoHXSDKModel model;
 	
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		return inflater.inflate(R.layout.fragment_conversation_settings, container, false);
-	}
+
 
 	@Override
-	public void onActivityCreated(Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.fragment_conversation_settings);
 		if(savedInstanceState != null && savedInstanceState.getBoolean("isConflict", false))
-            return;
-		rl_switch_notification = (RelativeLayout) getView().findViewById(R.id.rl_switch_notification);
-		rl_switch_sound = (RelativeLayout) getView().findViewById(R.id.rl_switch_sound);
-		rl_switch_vibrate = (RelativeLayout) getView().findViewById(R.id.rl_switch_vibrate);
-		rl_switch_speaker = (RelativeLayout) getView().findViewById(R.id.rl_switch_speaker);
-		rl_switch_chatroom_leave = (RelativeLayout) getView().findViewById(R.id.rl_switch_chatroom_owner_leave);
+			return;
+		rl_switch_notification = (RelativeLayout)findViewById(R.id.rl_switch_notification);
+		rl_switch_sound = (RelativeLayout)findViewById(R.id.rl_switch_sound);
+		rl_switch_vibrate = (RelativeLayout)findViewById(R.id.rl_switch_vibrate);
+		rl_switch_speaker = (RelativeLayout)findViewById(R.id.rl_switch_speaker);
+		rl_switch_chatroom_leave = (RelativeLayout)findViewById(R.id.rl_switch_chatroom_owner_leave);
 
-		iv_switch_open_notification = (ImageView) getView().findViewById(R.id.iv_switch_open_notification);
-		iv_switch_close_notification = (ImageView) getView().findViewById(R.id.iv_switch_close_notification);
-		iv_switch_open_sound = (ImageView) getView().findViewById(R.id.iv_switch_open_sound);
-		iv_switch_close_sound = (ImageView) getView().findViewById(R.id.iv_switch_close_sound);
-		iv_switch_open_vibrate = (ImageView) getView().findViewById(R.id.iv_switch_open_vibrate);
-		iv_switch_close_vibrate = (ImageView) getView().findViewById(R.id.iv_switch_close_vibrate);
-		iv_switch_open_speaker = (ImageView) getView().findViewById(R.id.iv_switch_open_speaker);
-		iv_switch_close_speaker = (ImageView) getView().findViewById(R.id.iv_switch_close_speaker);
-		
-		iv_switch_room_owner_leave_allow = (ImageView) getView().findViewById(R.id.iv_switch_chatroom_owner_leave_allow);
-		iv_switch_room_owner_leave_disallow = (ImageView) getView().findViewById(R.id.iv_switch_chatroom_owner_leave_not_allow);
-		
-		
-		logoutBtn = (Button) getView().findViewById(R.id.btn_logout);
+		iv_switch_open_notification = (ImageView)findViewById(R.id.iv_switch_open_notification);
+		iv_switch_close_notification = (ImageView)findViewById(R.id.iv_switch_close_notification);
+		iv_switch_open_sound = (ImageView)findViewById(R.id.iv_switch_open_sound);
+		iv_switch_close_sound = (ImageView)findViewById(R.id.iv_switch_close_sound);
+		iv_switch_open_vibrate = (ImageView)findViewById(R.id.iv_switch_open_vibrate);
+		iv_switch_close_vibrate = (ImageView)findViewById(R.id.iv_switch_close_vibrate);
+		iv_switch_open_speaker = (ImageView)findViewById(R.id.iv_switch_open_speaker);
+		iv_switch_close_speaker = (ImageView)findViewById(R.id.iv_switch_close_speaker);
+
+		iv_switch_room_owner_leave_allow = (ImageView)findViewById(R.id.iv_switch_chatroom_owner_leave_allow);
+		iv_switch_room_owner_leave_disallow = (ImageView)findViewById(R.id.iv_switch_chatroom_owner_leave_not_allow);
+
+
+		logoutBtn = (Button)findViewById(R.id.btn_logout);
 		if(!TextUtils.isEmpty(EMChatManager.getInstance().getCurrentUser())){
 			logoutBtn.setText(getString(R.string.button_logout) + "(" + EMChatManager.getInstance().getCurrentUser() + ")");
 		}
 
-		textview1 = (TextView) getView().findViewById(R.id.textview1);
-		textview2 = (TextView) getView().findViewById(R.id.textview2);
-		
-		blacklistContainer = (LinearLayout) getView().findViewById(R.id.ll_black_list);
-		userProfileContainer = (LinearLayout) getView().findViewById(R.id.ll_user_profile);
-		llDiagnose=(LinearLayout) getView().findViewById(R.id.ll_diagnose);
-		pushNick=(LinearLayout) getView().findViewById(R.id.ll_set_push_nick);
-		
+		textview1 = (TextView)findViewById(R.id.textview1);
+		textview2 = (TextView)findViewById(R.id.textview2);
+
+		blacklistContainer = (LinearLayout)findViewById(R.id.ll_black_list);
+		userProfileContainer = (LinearLayout)findViewById(R.id.ll_user_profile);
+		llDiagnose=(LinearLayout)findViewById(R.id.ll_diagnose);
+		pushNick=(LinearLayout)findViewById(R.id.ll_set_push_nick);
+
 		blacklistContainer.setOnClickListener(this);
 		userProfileContainer.setOnClickListener(this);
 		rl_switch_notification.setOnClickListener(this);
@@ -187,11 +175,11 @@ public class SettingsFragment extends Fragment implements OnClickListener {
 		llDiagnose.setOnClickListener(this);
 		pushNick.setOnClickListener(this);
 		rl_switch_chatroom_leave.setOnClickListener(this);
-		
+
 		chatOptions = EMChatManager.getInstance().getChatOptions();
-		
+
 		model = (DemoHXSDKModel) HXSDKHelper.getInstance().getModel();
-		
+
 		// 震动和声音总开关，来消息时，是否允许此开关打开
 		// the vibrate and sound notification are allowed or not?
 		if (model.getSettingMsgNotification()) {
@@ -201,7 +189,7 @@ public class SettingsFragment extends Fragment implements OnClickListener {
 			iv_switch_open_notification.setVisibility(View.INVISIBLE);
 			iv_switch_close_notification.setVisibility(View.VISIBLE);
 		}
-		
+
 		// 是否打开声音
 		// sound notification is switched on or not?
 		if (model.getSettingMsgSound()) {
@@ -211,7 +199,7 @@ public class SettingsFragment extends Fragment implements OnClickListener {
 			iv_switch_open_sound.setVisibility(View.INVISIBLE);
 			iv_switch_close_sound.setVisibility(View.VISIBLE);
 		}
-		
+
 		// 是否打开震动
 		// vibrate notification is switched on or not?
 		if (model.getSettingMsgVibrate()) {
@@ -234,13 +222,15 @@ public class SettingsFragment extends Fragment implements OnClickListener {
 
 		// 是否允许聊天室owner leave
 		if(model.isChatroomOwnerLeaveAllowed()){
-		    iv_switch_room_owner_leave_allow.setVisibility(View.VISIBLE);
-		    iv_switch_room_owner_leave_disallow.setVisibility(View.INVISIBLE);
+			iv_switch_room_owner_leave_allow.setVisibility(View.VISIBLE);
+			iv_switch_room_owner_leave_disallow.setVisibility(View.INVISIBLE);
 		}else{
-		    iv_switch_room_owner_leave_allow.setVisibility(View.INVISIBLE);
-            iv_switch_room_owner_leave_disallow.setVisibility(View.VISIBLE);
+			iv_switch_room_owner_leave_allow.setVisibility(View.INVISIBLE);
+			iv_switch_room_owner_leave_disallow.setVisibility(View.VISIBLE);
 		}
 	}
+
+
 
 	
 	@Override
@@ -335,16 +325,16 @@ public class SettingsFragment extends Fragment implements OnClickListener {
 			logout();
 			break;
 		case R.id.ll_black_list:
-			startActivity(new Intent(getActivity(), BlacklistActivity.class));
+			startActivity(new Intent(this, BlacklistActivity.class));
 			break;
 		case R.id.ll_diagnose:
-			startActivity(new Intent(getActivity(), DiagnoseActivity.class));
+			startActivity(new Intent(this, DiagnoseActivity.class));
 			break;
 		case R.id.ll_set_push_nick:
-			startActivity(new Intent(getActivity(), OfflinePushNickActivity.class));
+			startActivity(new Intent(this, OfflinePushNickActivity.class));
 			break;
 		case R.id.ll_user_profile:
-			startActivity(new Intent(getActivity(), UserProfileActivity.class).putExtra("setting", true));
+			startActivity(new Intent(this, UserProfileActivity.class).putExtra("setting", true));
 			break;
 		default:
 			break;
@@ -353,7 +343,7 @@ public class SettingsFragment extends Fragment implements OnClickListener {
 	}
 
 	void logout() {
-		final ProgressDialog pd = new ProgressDialog(getActivity());
+		final ProgressDialog pd = new ProgressDialog(this);
 		String st = getResources().getString(R.string.Are_logged_out);
 		pd.setMessage(st);
 		pd.setCanceledOnTouchOutside(false);
@@ -362,7 +352,7 @@ public class SettingsFragment extends Fragment implements OnClickListener {
 			
 			@Override
 			public void onSuccess() {
-				getActivity().runOnUiThread(new Runnable() {
+				runOnUiThread(new Runnable() {
 					public void run() {
 						FuLiCenterApplication insatnce = FuLiCenterApplication.getInstance();
 						insatnce.getContactList().clear();
@@ -370,9 +360,8 @@ public class SettingsFragment extends Fragment implements OnClickListener {
 						insatnce.getContacts().clear();
 						pd.dismiss();
 						// 重新显示登陆页面
-						((MainActivity) getActivity()).finish();
-						startActivity(new Intent(getActivity(), LoginActivity.class));
-						
+						finish();
+						startActivity(new Intent(SettingsActivity.this, LoginActivity.class));
 					}
 				});
 			}
@@ -384,29 +373,17 @@ public class SettingsFragment extends Fragment implements OnClickListener {
 			
 			@Override
 			public void onError(int code, String message) {
-				getActivity().runOnUiThread(new Runnable() {
+				runOnUiThread(new Runnable() {
 					
 					@Override
 					public void run() {
 						// TODO Auto-generated method stub
 						pd.dismiss();
-						Toast.makeText(getActivity(), "unbind devicetokens failed", Toast.LENGTH_SHORT).show();
-						
-						
+						Toast.makeText(SettingsActivity.this, "unbind devicetokens failed", Toast.LENGTH_SHORT).show();
 					}
 				});
 			}
 		});
 	}
 
-	
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-    	super.onSaveInstanceState(outState);
-        if(((MainActivity)getActivity()).isConflict){
-        	outState.putBoolean("isConflict", true);
-        }else if(((MainActivity)getActivity()).getCurrentAccountRemoved()){
-        	outState.putBoolean(Constant.ACCOUNT_REMOVED, true);
-        }
-    }
 }
