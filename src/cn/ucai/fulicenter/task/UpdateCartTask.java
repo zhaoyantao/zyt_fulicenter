@@ -2,6 +2,7 @@ package cn.ucai.fulicenter.task;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 
 import com.android.volley.Response;
 
@@ -67,7 +68,7 @@ public class UpdateCartTask extends BaseActivity{
             @Override
             public void onResponse(final MessageBean messageBean) {
                 if(messageBean.isSuccess()){
-                    ArrayList<CartBean> cartList = FuLiCenterApplication.getInstance().getCartList();
+                    final ArrayList<CartBean> cartList = FuLiCenterApplication.getInstance().getCartList();
                     if(mCart.getCount()<=0){
                         cartList.remove(mCart);
                     }else{
@@ -79,16 +80,22 @@ public class UpdateCartTask extends BaseActivity{
                                         public void onResponse(GoodDetailsBean goodDetailsBean) {
                                             if(goodDetailsBean!=null){
                                                 mCart.setGoods(goodDetailsBean);
-                                                mCart.setId(Integer.parseInt(messageBean.getMsg()));
-                                                Intent intent = new Intent("update_cart");
-                                                mContext.sendStickyBroadcast(intent);
+//                                                mCart.setId(Integer.parseInt(messageBean.getMsg()));
                                             }
+                                            for(CartBean c :cartList){
+                                                if(c.getGoodsId()==goodDetailsBean.getGoodsId()){
+                                                    c.setCount(c.getCount()+1);
+                                                    return;
+
+                                                }
+                                            }
+                                            cartList.add(mCart);
                                         }
                                     },errorListener()));
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-                        cartList.add(mCart);
+
                     }
                 }
                 Intent intent = new Intent("update_cart");

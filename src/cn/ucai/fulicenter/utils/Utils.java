@@ -140,4 +140,13 @@ public class Utils {
             new UpdateCartTask(mContext,cart).execute();
         }
     }
+
+    public static int sumCartCount() {
+        ArrayList<CartBean> cartList = FuLiCenterApplication.getInstance().getCartList();
+        int count = 0;
+        for(int i=0;i<cartList.size();i++){
+            count+=cartList.get(i).getCount();
+        }
+        return count;
+    }
 }

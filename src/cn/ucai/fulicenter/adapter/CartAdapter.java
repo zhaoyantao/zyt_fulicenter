@@ -2,6 +2,7 @@ package cn.ucai.fulicenter.adapter;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -52,7 +53,7 @@ public class CartAdapter extends RecyclerView.Adapter {
         RecyclerView.ViewHolder holder = null;
         switch (viewType){
             case I.TYPE_ITEM:
-                holder = new CartListHolder(inflater.inflate(R.layout.item_new_good,parent,false));
+                holder = new CartListHolder(inflater.inflate(R.layout.item_cart,parent,false));
                 break;
             case I.TYPE_FOOTER:
                 holder = new FooterViewHolder(inflater.inflate(R.layout.item_footer,parent,false));
@@ -67,6 +68,7 @@ public class CartAdapter extends RecyclerView.Adapter {
             footerHolder = (FooterViewHolder) holder;
             footerHolder.tvFooter.setText(footerText);
             footerHolder.tvFooter.setVisibility(View.VISIBLE);
+            return;
         }
         if(holder instanceof CartListHolder){
             cartHolder = (CartListHolder) holder;
@@ -126,6 +128,19 @@ public class CartAdapter extends RecyclerView.Adapter {
             ivAddCart = (ImageView) itemView.findViewById(R.id.iv_cart_add);
             ivDelCart = (ImageView) itemView.findViewById(R.id.iv_cart_del);
             chkChecked = (CheckBox) itemView.findViewById(R.id.chkSelece);
+        }
+
+        @Override
+        public String toString() {
+            return "CartListHolder{" +
+                    "cartName=" + cartName +
+                    ", cartPrice=" + cartPrice +
+                    ", cartAvatar=" + cartAvatar +
+                    ", cartNumber=" + cartNumber +
+                    ", ivAddCart=" + ivAddCart +
+                    ", ivDelCart=" + ivDelCart +
+                    ", chkChecked=" + chkChecked +
+                    '}';
         }
     }
 

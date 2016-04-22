@@ -8,23 +8,24 @@
     <RelativeLayout
         android:id="@+id/layout_cart_title"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="50dp">
 
         <TextView
             android:id="@+id/tvSumPrice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
-            android:text="合计：¥0.00"
+            android:text="合计：￥0.00"
             android:textColor="#f90"
             android:textSize="18sp"
             />
         <TextView
+            android:id="@+id/tvSavePrice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignLeft="@+id/tvSumPrice"
             android:layout_below="@+id/tvSumPrice"
-            android:text="节省：¥0.00"
+            android:text="节省：￥0.00"
             android:textColor="#36f"
             android:textSize="15sp"
             android:layout_marginBottom="1dp"

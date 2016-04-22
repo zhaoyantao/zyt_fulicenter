@@ -1,6 +1,9 @@
 package cn.ucai.fulicenter.activity;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -18,9 +21,11 @@ import cn.ucai.fulicenter.bean.MessageBean;
 import cn.ucai.fulicenter.data.ApiParams;
 import cn.ucai.fulicenter.data.GsonRequest;
 import cn.ucai.fulicenter.fragment.BoutiqueFragment;
+import cn.ucai.fulicenter.fragment.CartFragment;
 import cn.ucai.fulicenter.fragment.CategoryFragment;
 import cn.ucai.fulicenter.fragment.NewGoodFragment;
 import cn.ucai.fulicenter.fragment.PersionalCenterFragment;
+import cn.ucai.fulicenter.utils.Utils;
 
 /**
  * Created by clawpo on 16/4/16.
@@ -39,6 +44,7 @@ public class FuLiCenterMainActivity extends BaseActivity {
     BoutiqueFragment mBoutiqueFragment;
     CategoryFragment mCategoryFragment;
     PersionalCenterFragment mPersionalCenterFragment;
+    CartFragment mCartFragment;
     Fragment[] mFragments = new Fragment[5];
 
     int index;
@@ -47,7 +53,7 @@ public class FuLiCenterMainActivity extends BaseActivity {
 
     String mCurrentUserName;
     private String action;
-
+    CartChangedReceiver mCartChangedReceiver;
 
 
     @Override
@@ -68,6 +74,7 @@ public class FuLiCenterMainActivity extends BaseActivity {
                 .hide(mCategoryFragment)
                 .show(mNewGoodFragment)
                 .commit();
+        registerCartChangedReceiver();
     }
 
     private void initFragment() {
@@ -75,9 +82,11 @@ public class FuLiCenterMainActivity extends BaseActivity {
         mBoutiqueFragment = new BoutiqueFragment();
         mCategoryFragment=new CategoryFragment();
         mPersionalCenterFragment = new PersionalCenterFragment();
+        mCartFragment = new CartFragment();
         mFragments[0] = mNewGoodFragment;
         mFragments[1] = mBoutiqueFragment;
         mFragments[2] = mCategoryFragment;
+        mFragments[3] = mCartFragment;
         mFragments[4] = mPersionalCenterFragment;
     }
 
@@ -96,16 +105,24 @@ public class FuLiCenterMainActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        setRadioDefaultChecked(currentIndex);
         setFragment();
+        setRadioDefaultChecked(currentIndex);
     }
 
     private void setFragment() {
         mCurrentUserName = FuLiCenterApplication.getInstance().getUserName();
         action = getIntent().getStringExtra("action");
-        if (action != null && mCurrentUserName != null && action.equals("persion")) {
-            index=4;
-            action = "";
+        if (action != null && mCurrentUserName != null ) {
+            if(action.equals("person")){
+                index=4;
+            }
+            if(action.equals("cart")){
+                index=3;
+            }
+            getIntent().removeExtra("action");
+        }
+        if(mCurrentUserName==null&&currentIndex==4){
+            index=0;
         }
         if (currentIndex != index) {
             FragmentTransaction trx = getSupportFragmentManager().beginTransaction();
@@ -146,6 +163,7 @@ public class FuLiCenterMainActivity extends BaseActivity {
     }
 
     public void onCheckedChange(View view){
+        mCurrentUserName = FuLiCenterApplication.getInstance().getUserName();
         switch (view.getId()){
             case R.id.layout_new_good:
                 index = 0;
@@ -157,13 +175,15 @@ public class FuLiCenterMainActivity extends BaseActivity {
                 index = 2;
                 break;
             case R.id.layout_cart:
-                index = 3;
+                if (mCurrentUserName != null) {
+                    index = 3;
+                } else {
+                    gotoLogin("cart");
+                }
                 break;
             case R.id.layout_personal_center:
-                mCurrentUserName = FuLiCenterApplication.getInstance().getUserName();
                 if (mCurrentUserName != null) {
                     index = 4;
-//                    downloadCollectCount(mCurrentUserName);
                 } else {
                     gotoLogin("persion");
                 }
@@ -182,17 +202,17 @@ public class FuLiCenterMainActivity extends BaseActivity {
         currentIndex = index;
     }
 
-    private void downloadCollectCount(String userName) {
-        try {
-            String path = new ApiParams().with(I.Collect.USER_NAME, userName)
-                    .getRequestUrl(I.REQUEST_FIND_COLLECT_COUNT);
-            Log.i("main", path);
-            executeRequest(new GsonRequest<MessageBean>(path,MessageBean.class,
-                    responseDownloadCollectCount(),errorListener()));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+//    private void downloadCollectCount(String userName) {
+//        try {
+//            String path = new ApiParams().with(I.Collect.USER_NAME, userName)
+//                    .getRequestUrl(I.REQUEST_FIND_COLLECT_COUNT);
+//            Log.i("main", path);
+//            executeRequest(new GsonRequest<MessageBean>(path,MessageBean.class,
+//                    responseDownloadCollectCount(),errorListener()));
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     private Response.Listener<MessageBean> responseDownloadCollectCount() {
         return new Response.Listener<MessageBean>() {
@@ -224,5 +244,25 @@ public class FuLiCenterMainActivity extends BaseActivity {
     protected void onStart() {
         super.onStart();
         action = getIntent().getStringExtra("action");
+    }
+
+    class CartChangedReceiver extends BroadcastReceiver{
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            int count = Utils.sumCartCount();
+            if(count>0){
+                mtvCartHint.setText(""+count);
+                mtvCartHint.setVisibility(View.VISIBLE);
+            }else{
+                mtvCartHint.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    private void registerCartChangedReceiver(){
+        mCartChangedReceiver = new CartChangedReceiver();
+        IntentFilter filter = new IntentFilter("update_cart");
+        registerReceiver(mCartChangedReceiver,filter);
     }
 }
