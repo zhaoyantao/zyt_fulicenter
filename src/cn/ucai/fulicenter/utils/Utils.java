@@ -9,7 +9,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import cn.ucai.fulicenter.FuLiCenterApplication;
+import cn.ucai.fulicenter.bean.CartBean;
+import cn.ucai.fulicenter.bean.GoodDetailsBean;
 import cn.ucai.fulicenter.bean.UserBean;
+import cn.ucai.fulicenter.task.UpdateCartTask;
 
 /**
  * Created by clawpo on 16/3/28.
@@ -91,5 +95,49 @@ public class Utils {
     public static int dp2px(Context context,int dp) {
         int density= (int) context.getResources().getDisplayMetrics().density;
         return dp*density;
+    }
+
+    public static void addCart(Context mContext, GoodDetailsBean goods) {
+        boolean isExists = false;
+        String userName = null;
+        UserBean user = FuLiCenterApplication.getInstance().getUser();
+        if(user!=null){
+            userName = user.getUserName();
+        }else{
+            userName="";
+        }
+        ArrayList<CartBean> cartList = FuLiCenterApplication.getInstance().getCartList();
+        int goodsId = goods.getGoodsId();
+        CartBean cart = null;
+        for(int i=0;i<cartList.size()&&isExists;i++){
+            if(goodsId==cartList.get(i).getGoodsId()){
+                int count = cartList.get(i).getCount();
+                cartList.get(i).setCount(++count);
+                cart = cartList.get(i);
+                isExists = true;
+            }
+        }
+        if(!isExists){
+            cart = new CartBean(0,userName,goods.getGoodsId(),1,true);
+        }
+        new UpdateCartTask(mContext,cart).execute();
+    }
+
+    public static void delCart(Context mContext, GoodDetailsBean goods) {
+        boolean isExists = false;
+        CartBean cart = null;
+        ArrayList<CartBean> cartList = FuLiCenterApplication.getInstance().getCartList();
+        int goodsId = goods.getGoodsId();
+        for(int i=0;i<cartList.size()&&isExists;i++){
+            if(goodsId==cartList.get(i).getGoodsId()){
+                int count = cartList.get(i).getCount();
+                cartList.get(i).setCount(count-1);
+                cart = cartList.get(i);
+                isExists = true;
+            }
+        }
+        if(!isExists){
+            new UpdateCartTask(mContext,cart).execute();
+        }
     }
 }

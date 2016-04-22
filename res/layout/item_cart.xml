@@ -4,11 +4,16 @@
     android:layout_height="100dp"
     android:orientation="horizontal"
     android:background="@color/white">
-    <RadioButton
+    <CheckBox
+        android:id="@+id/chkSelece"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
+        android:layout_marginLeft="5dp"
+        android:checked="true"
+        style="@style/CustomCheckboxTheme"
         />
     <com.android.volley.toolbox.NetworkImageView
+        android:id="@+id/ivGoodsThumb"
         android:layout_width="100dp"
         android:layout_height="match_parent"
         android:src="@drawable/nopic"
@@ -19,6 +24,7 @@
         android:orientation="vertical"
         android:weightSum="2">
         <TextView
+            android:id="@+id/tv_cart_name"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
@@ -34,12 +40,14 @@
             android:layout_weight="1"
             android:weightSum="3">
             <ImageView
+                android:id="@+id/iv_cart_del"
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="match_parent"
                 android:src="@drawable/del_cart"
                 android:scaleType="center"/>
             <TextView
+                android:id="@+id/tv_cart_number"
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="match_parent"
@@ -48,6 +56,7 @@
                 android:textSize="25dp"
                 />
             <ImageView
+                android:id="@+id/iv_cart_add"
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="match_parent"
@@ -57,6 +66,7 @@
 
     </LinearLayout>
     <TextView
+        android:id="@+id/tv_cart_price"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:text="$199"
