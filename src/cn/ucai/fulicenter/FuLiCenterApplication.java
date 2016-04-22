@@ -44,14 +44,14 @@ public class FuLiCenterApplication extends Application {
 	public static DemoHXSDKHelper hxSDKHelper = new DemoHXSDKHelper();
 
 
-	private int collectGood;
+	private int collectCount;
 
-	public int getCollectGood() {
-		return collectGood;
+	public int getCollectCount() {
+		return collectCount;
 	}
 
-	public void setCollectGood(int collectGood) {
-		this.collectGood = collectGood;
+	public void setCollectCount(int collectCount) {
+		this.collectCount = collectCount;
 	}
 	@Override
 	public void onCreate() {
@@ -193,4 +193,5 @@ public class FuLiCenterApplication extends Application {
 	public void setGroupMembers(HashMap<String, ArrayList<UserBean>> groupMembers) {
 		this.groupMembers = groupMembers;
 	}
+
 }

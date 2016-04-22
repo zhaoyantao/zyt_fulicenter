@@ -1,5 +1,6 @@
 package cn.ucai.fulicenter.activity;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
@@ -12,121 +13,54 @@ import android.widget.TextView;
 import com.android.volley.Response;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import cn.ucai.fulicenter.FuLiCenterApplication;
 import cn.ucai.fulicenter.I;
 import cn.ucai.fulicenter.R;
-import cn.ucai.fulicenter.adapter.CollectListAdapter;
+import cn.ucai.fulicenter.adapter.CollectAdapter;
 import cn.ucai.fulicenter.bean.CollectBean;
 import cn.ucai.fulicenter.data.ApiParams;
 import cn.ucai.fulicenter.data.GsonRequest;
-import cn.ucai.fulicenter.utils.DisplayUtils;
 import cn.ucai.fulicenter.utils.Utils;
+import cn.ucai.fulicenter.view.DisplayUtils;
 
 /**
- * Created by sks on 2016/4/21.
+ * Created by ucai on 2016/4/21.
  */
-public class CollectActivity extends BaseActivity{
-    CollectActivity mContext;
-    ArrayList<CollectBean> list;
-    CollectListAdapter mAdapter;
+public class CollectActivity extends BaseActivity {
+    Context mContext;
+    ArrayList<CollectBean> mCollectList;
+    CollectAdapter mAdapter;
     private  int pageId = 0;
     private int action = I.ACTION_DOWNLOAD;
     String path;
-    String name;
 
+    /** 下拉刷新控件*/
     SwipeRefreshLayout mSwipeRefreshLayout;
     RecyclerView mRecyclerView;
     TextView mtvHint;
     GridLayoutManager mGridLayoutManager;
 
     @Override
-    protected void onCreate(Bundle arg0) {
-        super.onCreate(arg0);
-        mContext = this;
-        View layout = View.inflate(mContext, R.layout.activity_collect,null);
-        list = new ArrayList<>();
-        initView(layout);
-        initData();
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_collect);
+        mContext=this;
+        mCollectList = new ArrayList<CollectBean>();
+        initView();
         setListener();
+        initData();
     }
+
+   
     private void setListener() {
-        setPullUpRefreshListener();
         setPullDownRefreshListener();
+        setPullUpRefreshListener();
     }
 
-    private void initData() {
-        try {
-            getPath(pageId);
-            mContext.executeRequest(new GsonRequest<CollectBean[]>(path,
-                    CollectBean[].class,responseDownloadCollectListener(),
-                    mContext.errorListener()));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private Response.Listener<CollectBean[]> responseDownloadCollectListener() {
-        return new Response.Listener<CollectBean[]>() {
-            @Override
-            public void onResponse(CollectBean[] collectBeen) {
-                if(collectBeen!=null){
-                    mAdapter.setMore(true);
-                    mSwipeRefreshLayout.setRefreshing(false);
-                    mtvHint.setVisibility(View.GONE);
-                    mAdapter.setFooterText("jiazai");
-                    //将数组转换为集合
-                    Log.e("abc","得到的收藏数据"+ Arrays.toString(collectBeen));
-                    ArrayList<CollectBean> list = Utils.array2List(collectBeen);
-                    if (action == I.ACTION_DOWNLOAD || action == I.ACTION_PULL_DOWN) {
-                        mAdapter.initItems(list);
-                    } else if (action == I.ACTION_PULL_UP) {
-                        mAdapter.addItems(list);
-                    }
-                    if(collectBeen.length<I.PAGE_SIZE_DEFAULT){
-                        mAdapter.setMore(false);
-                        mAdapter.setFooterText(R.string.no_more_data+"");
-                    }
-                }
-            }
-        };
-    }
-
-    private String getPath(int pageId){
-        try {
-            path = new ApiParams()
-                    .with(I.User.USER_NAME, name)
-                    .with(I.PAGE_ID, pageId+"")
-                    .with(I.PAGE_SIZE, I.PAGE_SIZE_DEFAULT+"")
-                    .getRequestUrl(I.REQUEST_FIND_COLLECTS);
-            return path;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private void initView(View layout) {
-        name = FuLiCenterApplication.getInstance().getUserName();
-        mSwipeRefreshLayout = (SwipeRefreshLayout) layout.findViewById(R.id.sfl_newgood);
-        mSwipeRefreshLayout.setColorSchemeColors(
-                R.color.google_blue,
-                R.color.google_green,
-                R.color.google_red,
-                R.color.google_yellow
-        );
-        mtvHint = (TextView) layout.findViewById(R.id.tv_refresh_hint);
-        mGridLayoutManager = new GridLayoutManager(mContext, I.COLUM_NUM);
-        mGridLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
-        mRecyclerView = (RecyclerView) layout.findViewById(R.id.rv_newgood);
-        mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.setLayoutManager(mGridLayoutManager);
-        mAdapter = new CollectListAdapter(mContext,list);
-        mRecyclerView.setAdapter(mAdapter);
-//        DisplayUtils.initBackWithTitle(mContext,"收藏的宝贝");
-    }
-
+    /**
+     * 上拉刷新事件监听
+     */
     private void setPullUpRefreshListener() {
         mRecyclerView.setOnScrollListener(
                 new RecyclerView.OnScrollListener() {
@@ -139,11 +73,12 @@ public class CollectActivity extends BaseActivity{
                             if(mAdapter.isMore()){
                                 mSwipeRefreshLayout.setRefreshing(true);
                                 action = I.ACTION_PULL_UP;
-                                pageId +=I.PAGE_SIZE_DEFAULT;
+//                                pageId +=I.PAGE_SIZE_DEFAULT;
+                                pageId+=4;
                                 getPath(pageId);
-                                mContext.executeRequest(new GsonRequest<CollectBean[]>(path,
-                                        CollectBean[].class,responseDownloadCollectListener(),
-                                        mContext.errorListener()));
+                                executeRequest(new GsonRequest<CollectBean[]>(path,
+                                        CollectBean[].class,responseDownloadNewGoodListener(),
+                                        errorListener()));
                             }
                         }
                     }
@@ -173,14 +108,84 @@ public class CollectActivity extends BaseActivity{
                         pageId = 0;
                         action = I.ACTION_PULL_DOWN;
                         getPath(pageId);
-                        mContext.executeRequest(new GsonRequest<CollectBean[]>(path,
-                                CollectBean[].class,responseDownloadCollectListener(),
-                                mContext.errorListener()));
+                        executeRequest(new GsonRequest<CollectBean[]>(path,
+                                CollectBean[].class,responseDownloadNewGoodListener(),
+                                errorListener()));
                     }
                 }
         );
     }
 
+    private void initData() {
+        try {
+            getPath(pageId);
+            executeRequest(new GsonRequest<CollectBean[]>(path,
+                    CollectBean[].class,responseDownloadNewGoodListener(),
+                    errorListener()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    private String getPath(int pageId){
+        try {
+            String userName = FuLiCenterApplication.getInstance().getUserName();
+            if (userName != null) {
+                path = new ApiParams()
+                        .with(I.User.USER_NAME,userName)
+                        .with(I.PAGE_ID, pageId+"")
+                        .with(I.PAGE_SIZE, "4")
+                        .getRequestUrl(I.REQUEST_FIND_COLLECTS);
+                Log.i("main", path);
+                return path;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
+    private Response.Listener<CollectBean[]> responseDownloadNewGoodListener() {
+        return new Response.Listener<CollectBean[]>() {
+            @Override
+            public void onResponse(CollectBean[] CollectBean) {
+                if(CollectBean!=null) {
+                    mAdapter.setMore(true);
+                    mSwipeRefreshLayout.setRefreshing(false);
+                    mtvHint.setVisibility(View.GONE);
+                    mAdapter.setFooterText("加载更多数据");
+                    ArrayList<CollectBean> list = Utils.array2List(CollectBean);
+                    if (action == I.ACTION_DOWNLOAD || action == I.ACTION_PULL_DOWN) {
+                        mAdapter.initItems(list);
+                    } else if (action == I.ACTION_PULL_UP) {
+                        mAdapter.addItems(list);
+                    }
+                    if(CollectBean.length<4){
+                        mAdapter.setMore(false);
+                        mAdapter.setFooterText("没有更多数据");
+
+                    }
+                }
+                Log.i("main", "CollectBean为空");
+            }
+        };
+    }
+
+    private void initView() {
+        mSwipeRefreshLayout = (SwipeRefreshLayout)findViewById(R.id.sfl_collect);
+        mSwipeRefreshLayout.setColorSchemeColors(
+                R.color.google_blue,
+                R.color.google_green,
+                R.color.google_red,
+                R.color.google_yellow
+        );
+//        DisplayUtils.initBackwithTitle(this,"收藏列表");
+        mtvHint = (TextView)findViewById(R.id.tv_refresh_hint);
+        mGridLayoutManager = new GridLayoutManager(mContext, I.COLUM_NUM);
+        mGridLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        mRecyclerView = (RecyclerView)findViewById(R.id.rv_collect);
+        mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.setLayoutManager(mGridLayoutManager);
+        mAdapter = new CollectAdapter(this,mCollectList);
+        mRecyclerView.setAdapter(mAdapter);
+    }
 }
-
