@@ -358,6 +358,11 @@ public class SettingsActivity extends BaseActivity implements OnClickListener {
 						insatnce.getContactList().clear();
 						insatnce.getUserList().clear();
 						insatnce.getContacts().clear();
+						insatnce.getCartList().clear();
+						insatnce.setUserName(null);
+						insatnce.setUser(null);
+						sendStickyBroadcast(new Intent("update_user"));
+						sendStickyBroadcast(new Intent("update_cart"));
 						pd.dismiss();
 						// 重新显示登陆页面
 						finish();
